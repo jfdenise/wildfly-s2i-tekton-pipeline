@@ -1,0 +1,82 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: wildfly-s2i-build-pipeline
+spec:
+  params:
+    - name: gitUrl
+    - name: revision
+      default: ""
+    - name: contextDir
+      default: ""
+    - name: outputImage
+    - name: MAVEN_ARGS_APPEND
+      default: ""
+    - name: MAVEN_OPTS
+      default: ""
+    - name: ARTIFACT_DIR
+      default: ""
+    - name: GALLEON_PROVISION_LAYERS
+      default: ""
+    - name: GALLEON_PROVISION_FEATURE_PACKS
+      default: ""
+  workspaces:
+    - name: shared-data
+    - name: maven-cache
+  tasks:
+    - name: git-clone-repo
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-data
+      params:
+        - name: url
+          value: "$(params.gitUrl)"
+        - name: revision
+          value: "$(params.revision)"
+        - name: deleteExisting
+          value: "true"
+        - name: depth
+          value: "1"
+    - name: wildfly-s2i-build
+      taskRef:
+        name: wildfly-s2i-build-task
+      params:
+        - name: contextDir
+          value: "$(params.contextDir)"
+        - name: MAVEN_ARGS_APPEND
+          value: "$(params.MAVEN_ARGS_APPEND)"
+        - name: MAVEN_OPTS
+          value: "$(params.MAVEN_OPTS)"
+        - name: _ARTIFACT_DIR
+          value: "$(params.ARTIFACT_DIR)"
+        - name: GALLEON_PROVISION_LAYERS
+          value: "$(params.GALLEON_PROVISION_LAYERS)"
+        - name: GALLEON_PROVISION_FEATURE_PACKS
+          value: "$(params.GALLEON_PROVISION_FEATURE_PACKS)"
+      runAfter: 
+        - git-clone-repo
+      workspaces:
+        - name: sources
+          workspace: shared-data
+        - name: maven-cache
+          workspace: maven-cache
+    - name: kaniko-build-push
+      taskRef:
+        name: kaniko
+      params:
+        - name: IMAGE
+          value: "$(params.outputImage)"
+        - name: DOCKERFILE
+          value: "$(tasks.wildfly-s2i-build.results.dockerFile)"
+        - name: CONTEXT
+          value: "$(tasks.wildfly-s2i-build.results.dockerBuildContext)"
+        - name: EXTRA_ARGS
+          value: 
+           - --insecure
+      runAfter: 
+        - wildfly-s2i-build
+      workspaces:
+        - name: source
+          workspace: shared-data

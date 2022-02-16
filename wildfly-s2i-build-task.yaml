@@ -1,0 +1,97 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: wildfly-s2i-build-task
+spec:
+  params:
+   - name: contextDir
+     type: string
+     default: ""
+   - name: MAVEN_OPTS
+     type: string
+     default: ""
+   - name: MAVEN_ARGS_APPEND
+     type: string
+     default: ""
+   - name: _ARTIFACT_DIR
+     type: string
+     default: ""
+   - name: GALLEON_PROVISION_LAYERS
+     type: string
+     default: ""
+   - name: GALLEON_PROVISION_FEATURE_PACKS
+     type: string
+     default: ""
+  workspaces:
+    - name: sources
+      description: The src dir
+    - name: maven-cache
+      description: The maven repo cache
+  results:
+    - name: dockerFile
+      description: The generated docker file path.
+    - name: dockerBuildContext
+      description: The path of the build context.
+  steps:
+    - name: build-application
+      securityContext:
+        runAsUser: 0
+      image: "quay.io/jfdenise/wildfly-s2i-jdk11:latest"
+      workingDir: $(workspaces.sources.path)
+      env:
+        - name: WORKSPACE_SRC_PATH
+          value: $(workspaces.sources.path)
+        - name: WORKSPACE_SRC_CONTEXT_DIR
+          value: $(params.contextDir)
+        - name: MAVEN_ARGS_APPEND
+          value: $(params.MAVEN_ARGS_APPEND)
+        - name: MAVEN_OPTS
+          value: $(params.MAVEN_OPTS)
+        - name: MAVEN_LOCAL_REPO
+          value: $(workspaces.maven-cache.path)
+        - name: _ARTIFACT_DIR
+          value: $(params._ARTIFACT_DIR)
+        - name: GALLEON_PROVISION_LAYERS
+          value: $(params.GALLEON_PROVISION_LAYERS)
+        - name: GALLEON_PROVISION_FEATURE_PACKS
+          value: $(params.GALLEON_PROVISION_FEATURE_PACKS)
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+        
+        #Assembly expects source to be in src sub directory of S2I_DESTINATION_DIR
+        srcDir="$WORKSPACE_SRC_PATH"
+        if [ ! -z "$WORKSPACE_SRC_CONTEXT_DIR" ]; then
+          srcDir="$srcDir/$WORKSPACE_SRC_CONTEXT_DIR"
+        fi
+        s2iDestinationDir="$WORKSPACE_SRC_PATH/s2i_destination_dir"
+        s2iSourceDir="$s2iDestinationDir/src"
+        mkdir -p "$s2iSourceDir"
+        mv "$srcDir"/* "$s2iSourceDir"
+        export S2I_DESTINATION_DIR="$s2iDestinationDir"
+        
+        if [ ! -z "$_ARTIFACT_DIR" ]; then
+          export ARTIFACT_DIR="$_ARTIFACT_DIR"
+        fi
+        
+        /usr/local/s2i/assemble
+        
+        # Generate Dockerfile file and create docker build context
+        # To be consumed by task tha tdoes docker build (kaniko, ...)
+        dockerDirName="docker-build"
+        dockerFileName="Dockerfile"
+        dockerBuildContext="$WORKSPACE_SRC_PATH/$dockerDirName"
+        dockerFile="$dockerBuildContext/$dockerFileName"
+        mkdir -p "$dockerBuildContext"
+        mv "$JBOSS_HOME" "$dockerBuildContext"
+         cat <<EOF > "$dockerFile"
+        FROM quay.io/jfdenise/wildfly-runtime-jdk11:latest
+        COPY server \$JBOSS_HOME
+        USER root
+        RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME
+        USER jboss
+        EOF
+
+        # The paths are relative to the shared workspace.
+        echo -n "$dockerDirName/$dockerFileName" > $(results.dockerFile.path)
+        echo -n "$dockerDirName" > $(results.dockerBuildContext.path)

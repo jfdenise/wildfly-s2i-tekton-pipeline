@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: test-app
+spec:
+  workspaces:
+  - name: shared-data
+    subPath: sources
+    persistentVolumeClaim:
+      claimName: maven-cache
+  - name: maven-cache
+    subPath: maven-repo-cache
+    persistentVolumeClaim:
+      claimName: maven-cache
+  pipelineRef:
+    name: wildfly-s2i-build-pipeline
+  params:
+    - name: gitUrl
+      value: "http://github.com/wildfly/wildfly-s2i"
+    - name: revision
+      value: "v2"
+    - name: contextDir
+      value: "test/test-app"
+    - name: outputImage
+      value: "registry.minikube/wildfly/sample-test-app-v2"
