@@ -23,3 +23,6 @@ spec:
       value: "test/test-app"
     - name: outputImage
       value: "registry.minikube/wildfly/sample-test-app-v2"
+    - name: kanikoExtraArgs
+      value: 
+      - --insecure

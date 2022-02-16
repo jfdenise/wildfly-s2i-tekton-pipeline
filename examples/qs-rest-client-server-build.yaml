@@ -31,3 +31,6 @@ spec:
       value: "org.wildfly:wildfly-galleon-pack:26.0.0.Final"
     - name: GALLEON_PROVISION_LAYERS
       value: "jaxrs-server,microprofile-platform"
+    - name: kanikoExtraArgs
+      value:
+      - --insecure

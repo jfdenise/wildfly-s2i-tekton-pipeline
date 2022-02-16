@@ -20,6 +20,9 @@ spec:
       default: ""
     - name: GALLEON_PROVISION_FEATURE_PACKS
       default: ""
+    - name: kanikoExtraArgs
+      type: array
+      default: []
   workspaces:
     - name: shared-data
     - name: maven-cache
@@ -73,8 +76,7 @@ spec:
         - name: CONTEXT
           value: "$(tasks.wildfly-s2i-build.results.dockerBuildContext)"
         - name: EXTRA_ARGS
-          value: 
-           - --insecure
+          value: ["$(params.kanikoExtraArgs)"]
       runAfter: 
         - wildfly-s2i-build
       workspaces:
