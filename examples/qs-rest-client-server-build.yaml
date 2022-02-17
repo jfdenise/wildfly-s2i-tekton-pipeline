@@ -15,6 +15,10 @@ spec:
   pipelineRef:
     name: wildfly-s2i-build-pipeline
   params:
+    - name: deploy
+      value: "true"
+    - name: deployment-name
+      value: "qs-rest-client-server"
     - name: gitUrl
       value: "https://github.com/wildfly/quickstart.git"
     - name: revision

@@ -10,6 +10,10 @@ spec:
     - name: contextDir
       default: ""
     - name: outputImage
+    - name: deploy
+      default: "false"
+    - name: deployment-name
+      default: "deployed-app"
     - name: MAVEN_ARGS_APPEND
       default: ""
     - name: MAVEN_OPTS
@@ -82,3 +86,23 @@ spec:
       workspaces:
         - name: source
           workspace: shared-data
+    - name: start-deployment
+      runAfter: 
+        - kaniko-build-push
+      when:
+      - input: "$(params.deploy)"
+        operator: in
+        values: ["true"]
+      taskRef:
+        name: kubernetes-actions
+      params:
+        - name: script
+          value: |
+             kubectl create deployment $1 --image=$2
+             kubectl expose deployment $1 --type=LoadBalancer --port=8080
+             kubectl scale deployment $1 --replicas=0
+             kubectl scale deployment $1 --replicas=1
+        - name: args
+          value:
+           - $(params.deployment-name)
+           - $(params.outputImage)

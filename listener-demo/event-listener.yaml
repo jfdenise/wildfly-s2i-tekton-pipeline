@@ -1,0 +1,9 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: my-listener
+spec:
+  triggers:
+    - name: trig-build
+      template:
+        ref: pipeline-template

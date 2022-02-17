@@ -15,10 +15,14 @@ spec:
   pipelineRef:
     name: wildfly-s2i-build-pipeline
   params:
+    - name: deploy
+      value: "true"
+    - name: deployment-name
+      value: "test-app"
     - name: gitUrl
-      value: "http://github.com/wildfly/wildfly-s2i"
+      value: "http://github.com/jfdenise/wildfly-s2i"
     - name: revision
-      value: "v2"
+      value: "tekton-demo"
     - name: contextDir
       value: "test/test-app"
     - name: outputImage
