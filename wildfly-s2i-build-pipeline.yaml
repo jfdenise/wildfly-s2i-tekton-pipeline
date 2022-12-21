@@ -6,11 +6,13 @@ spec:
   params:
     - name: gitUrl
     - name: revision
-      default: ""
+      default: "main"
     - name: contextDir
       default: ""
     - name: namespace
+      default: "$(context.pipelineRun.namespace)"
     - name: dockerRegistry
+      default: "image-registry.openshift-image-registry.svc:5000"
     - name: deploy
       default: "true"
     - name: deploymentName

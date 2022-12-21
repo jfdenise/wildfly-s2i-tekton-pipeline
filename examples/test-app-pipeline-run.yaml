@@ -15,15 +15,9 @@ spec:
   pipelineRef:
     name: wildfly-s2i-build-pipeline-os
   params:
-    - name: deploymentName
-      value: "test-app"
     - name: gitUrl
       value: "http://github.com/wildfly/wildfly-s2i"
-    - name: revision
-      value: "main"
     - name: contextDir
       value: "test/test-app"
-    - name: dockerRegistry
-      value: "image-registry.openshift-image-registry.svc:5000"
-    - name: namespace
-      value: "jdenise-dev"
+    - name: deploymentName
+      value: "test-app"

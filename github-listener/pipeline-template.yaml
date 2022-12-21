@@ -29,10 +29,6 @@ spec:
           value: "$(tt.params.git-revision)"
         - name: contextDir
           value: "test/test-app"
-        - name: dockerRegistry
-          value: "image-registry.openshift-image-registry.svc:5000"
-        - name: namespace
-          value: "jdenise-dev"
       workspaces:
       - name: shared-data
         subPath: sources
