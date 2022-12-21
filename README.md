@@ -16,29 +16,27 @@ The pipeline optionally creates a deployment.
 
 * ``oc create --filename  pvc-sources-maven.yaml``
 
-Grant all access to user (required to create POD, services and pipelines from event listener).
-* ``oc create --filename  rbac.yaml``
-
-Example: Build an image, create a POD and service
+## Example: Build an image, create a POD and service
 
 * Build: ``oc create --filename examples/test-app-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
 
-Event listener example: Start the pipeline from an external event
+## Event listener example: Start the pipeline from an external event
 
-Install tekton triggers
 
-* ``kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml``
-* ``kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml``
+### Create the Template and Event listener (a service named el-test-app-event-listener is created and exposed)
 
-Create the Event listener (a service named el-my-listener is created)
+* ``oc apply --filename github-listener/pipeline-template.yaml``
+* ``oc apply --filename github-listener/event-listener.yaml``
+* ``oc expose service/el-test-app-event-listener``
 
-* ``kubectl apply --filename listener-demo/event-listener.yaml``
-* ``kubectl apply --filename listener-demo/pipeline-template.yaml``
-* Enable port forwarding to send event to the listener: ``kubectl port-forward service/el-my-listener 8080 &``
+### Create the webhook
 
-Send the event
+* ``echo $(oc  get route el-test-app-event-listener --template='http://{{.spec.host}}')``
+* Copy the URL printed in the console.
+* Add a webhook in your git repository
 
-* ``curl -X POST --data {} 127.0.0.1:8080``
-* In the tekton dashboard, a new pipeline run is started, you can monitor its state.
+### Push a new commit
+
+`` git commit -m "empty-commit" --allow-empty && git push origin test-openshift-pipeline ``

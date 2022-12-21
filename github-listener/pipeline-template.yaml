@@ -1,43 +1,38 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: pipeline-template
+  name: wildfly-trigger-template
 spec:
   params:
-  - name: gitrevision
+  - name: git-revision
     description: The git revision
-    default: main
-  - name: gitrepositoryurl
+  - name: git-repo-url
     description: The git repository url
-  - name: message
-    description: The message to print
-    default: This is the default message
-  - name: contenttype
-    description: The Content-Type of the event
+  
   resourcetemplates:
   - apiVersion: tekton.dev/v1beta1
     kind: PipelineRun
     metadata:
       generateName: build-from-listener-run-
     spec:
+      serviceAccountName: pipeline
       pipelineRef:
-        name: wildfly-s2i-build-pipeline
+        name: wildfly-s2i-build-pipeline-os
       params:
-        - name: deploy
-          value: "true"
-        - name: deployment-name
+        - name: deploymentName
           value: "test-app"
+        - name: deploy
+          value: "false"
         - name: gitUrl
-          value: "http://github.com/jfdenise/wildfly-s2i"
+          value: "$(tt.params.git-repo-url)"
         - name: revision
-          value: "tekton-demo"
+          value: "$(tt.params.git-revision)"
         - name: contextDir
           value: "test/test-app"
-        - name: outputImage
-          value: "registry.minikube/wildfly/sample-test-app-v2"
-        - name: kanikoExtraArgs
-          value: 
-          - --insecure
+        - name: dockerRegistry
+          value: "image-registry.openshift-image-registry.svc:5000"
+        - name: namespace
+          value: "jdenise-dev"
       workspaces:
       - name: shared-data
         subPath: sources
