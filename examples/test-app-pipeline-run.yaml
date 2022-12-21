@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: test-app
+  generateName: test-app-os
 spec:
   workspaces:
   - name: shared-data
@@ -13,20 +13,17 @@ spec:
     persistentVolumeClaim:
       claimName: maven-cache
   pipelineRef:
-    name: wildfly-s2i-build-pipeline
+    name: wildfly-s2i-build-pipeline-os
   params:
-    - name: deploy
-      value: "true"
-    - name: deployment-name
+    - name: deploymentName
       value: "test-app"
     - name: gitUrl
-      value: "http://github.com/jfdenise/wildfly-s2i"
+      value: "http://github.com/wildfly/wildfly-s2i"
     - name: revision
-      value: "tekton-demo"
+      value: "main"
     - name: contextDir
       value: "test/test-app"
-    - name: outputImage
-      value: "registry.minikube/wildfly/sample-test-app-v2"
-    - name: kanikoExtraArgs
-      value: 
-      - --insecure
+    - name: dockerRegistry
+      value: "image-registry.openshift-image-registry.svc:5000"
+    - name: namespace
+      value: "jdenise-dev"

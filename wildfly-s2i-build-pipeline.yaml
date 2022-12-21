@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: wildfly-s2i-build-pipeline
+  name: wildfly-s2i-build-pipeline-os
 spec:
   params:
     - name: gitUrl
@@ -9,11 +9,11 @@ spec:
       default: ""
     - name: contextDir
       default: ""
-    - name: outputImage
+    - name: namespace
+    - name: dockerRegistry
     - name: deploy
-      default: "false"
-    - name: deployment-name
-      default: "deployed-app"
+      default: "true"
+    - name: deploymentName
     - name: MAVEN_ARGS_APPEND
       default: ""
     - name: MAVEN_OPTS
@@ -24,9 +24,6 @@ spec:
       default: ""
     - name: GALLEON_PROVISION_FEATURE_PACKS
       default: ""
-    - name: kanikoExtraArgs
-      type: array
-      default: []
   workspaces:
     - name: shared-data
     - name: maven-cache
@@ -34,6 +31,7 @@ spec:
     - name: git-clone-repo
       taskRef:
         name: git-clone
+        kind: ClusterTask
       workspaces:
         - name: output
           workspace: shared-data
@@ -48,7 +46,7 @@ spec:
           value: "1"
     - name: wildfly-s2i-build
       taskRef:
-        name: wildfly-s2i-build-task
+        name: wildfly-s2i-build-os-task
       params:
         - name: contextDir
           value: "$(params.contextDir)"
@@ -69,40 +67,36 @@ spec:
           workspace: shared-data
         - name: maven-cache
           workspace: maven-cache
-    - name: kaniko-build-push
+    - name: buildah-build-push
       taskRef:
-        name: kaniko
+        name: buildah
+        kind: ClusterTask
       params:
         - name: IMAGE
-          value: "$(params.outputImage)"
+          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName)"
         - name: DOCKERFILE
           value: "$(tasks.wildfly-s2i-build.results.dockerFile)"
         - name: CONTEXT
           value: "$(tasks.wildfly-s2i-build.results.dockerBuildContext)"
-        - name: EXTRA_ARGS
-          value: ["$(params.kanikoExtraArgs)"]
+        - name: TLSVERIFY
+          value: "false" 
       runAfter: 
         - wildfly-s2i-build
       workspaces:
         - name: source
           workspace: shared-data
-    - name: start-deployment
-      runAfter: 
-        - kaniko-build-push
+    - name: deploy
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      runAfter:
+        - buildah-build-push
       when:
       - input: "$(params.deploy)"
         operator: in
         values: ["true"]
-      taskRef:
-        name: kubernetes-actions
       params:
-        - name: script
-          value: |
-             kubectl create deployment $1 --image=$2
-             kubectl expose deployment $1 --type=LoadBalancer --port=8080
-             kubectl scale deployment $1 --replicas=0
-             kubectl scale deployment $1 --replicas=1
-        - name: args
-          value:
-           - $(params.deployment-name)
-           - $(params.outputImage)
+      - name: SCRIPT
+        value: |
+          oc new-app --docker-image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName)
+          oc expose service/$(params.deploymentName)

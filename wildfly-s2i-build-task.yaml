@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: wildfly-s2i-build-task
+  name: wildfly-s2i-build-os-task
 spec:
   params:
    - name: contextDir
@@ -36,7 +36,7 @@ spec:
     - name: build-application
       securityContext:
         runAsUser: 0
-      image: "quay.io/jfdenise/wildfly-s2i-jdk11:latest"
+      image: "quay.io/wildfly/wildfly-s2i:latest"
       workingDir: $(workspaces.sources.path)
       env:
         - name: WORKSPACE_SRC_PATH
@@ -77,7 +77,7 @@ spec:
         /usr/local/s2i/assemble
         
         # Generate Dockerfile file and create docker build context
-        # To be consumed by task tha tdoes docker build (kaniko, ...)
+        # To be consumed by task that does docker build (kaniko, buildah,...)
         dockerDirName="docker-build"
         dockerFileName="Dockerfile"
         dockerBuildContext="$WORKSPACE_SRC_PATH/$dockerDirName"
@@ -85,7 +85,7 @@ spec:
         mkdir -p "$dockerBuildContext"
         mv "$JBOSS_HOME" "$dockerBuildContext"
          cat <<EOF > "$dockerFile"
-        FROM quay.io/jfdenise/wildfly-runtime-jdk11:latest
+        FROM quay.io/wildfly/wildfly-runtime:latest
         COPY server \$JBOSS_HOME
         USER root
         RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME

@@ -1,54 +1,29 @@
-# WildFly s2i V2 pipeline
+# WildFly s2i pipeline for Openshift
 
-A pipeline to produce an application image using the WildFly s2i builder and runtime image. Image built using Kaniko.
+A pipeline to produce an application image using the WildFly s2i builder and runtime image. Image built using Buildah.
 The pipeline optionally creates a deployment.
 
-Using minikube v1.25.1, push image to local registry
+## Pre-requisites
 
-* ``minikube start``
-* ``minikube addons enable registry``
-* ``minikube addons enable registry-aliases``
+*  Logged into an OpenShift cluster (such as OpenShift Sandbox).
 
-Install tekton
+## Install the WildFly s2i task and pipeline
 
-* ``kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.30.0/release.yaml``
-* ``kubectl apply --filename https://github.com/tektoncd/dashboard/releases/latest/download/tekton-dashboard-release.yaml``
+* ``oc create --filename wildfly-s2i-build-task.yaml``
+* ``oc create --filename wildfly-s2i-build-pipeline.yaml``
 
-Install tasks from catalog
+## Create a PVC (Maven cache and shared data between tasks)
 
-* ``kubectl apply --filename https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.5/git-clone.yaml``
-* ``kubectl apply --filename https://raw.githubusercontent.com/tektoncd/catalog/main/task/kaniko/0.5/kaniko.yaml``
-* ``kubectl apply --filename https://raw.githubusercontent.com/tektoncd/catalog/main/task/kubernetes-actions/0.2/kubernetes-actions.yaml``
-
-Install WildFly s2i task and pipeline
-
-* ``kubectl create --filename wildfly-s2i-build-task.yaml``
-* ``kubectl create --filename wildfly-s2i-build-pipeline.yaml``
-
-Create PVC (Maven cache and shared data between tasks)
-
-* ``kubectl create --filename  pvc-sources-maven.yaml``
+* ``oc create --filename  pvc-sources-maven.yaml``
 
 Grant all access to user (required to create POD, services and pipelines from event listener).
-* ``kubectl create --filename  rbac.yaml``
+* ``oc create --filename  rbac.yaml``
 
-Enable proxy to access to the Tekton dashboard
+Example: Build an image, create a POD and service
 
-* ``kubectl proxy &``
-* Access to ``http://localhost:8001/api/v1/namespaces/tekton-pipelines/services/tekton-dashboard:http/proxy/#/namespaces/default/pipelines``
-* You should see the ``wildfly-s2i-build-pipeline``.
+* Build: ``oc create --filename examples/test-app-pipeline-run.yaml``
+* In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-Example 1: Build an image, create a POD and service
-
-* V2 build: ``kubectl create --filename examples/test-app-build.yaml``
-* In tekton dashboard you can monitor the started pipeline run (from ``PipelineRuns`` ).
-* When done, you can access the application: ``minikube service test-app``
-
-Example 2: Build an image from an existing quickstart, create a POD and service
-
-* V2 build with legacy quickstart: ``kubectl create --filename examples/qs-rest-client-server-build.yaml``
-* In tekton dashboard you can monitor the started pipeline run (from ``PipelineRuns`` ).
-* When done, you can access the application: ``minikube service qs-rest-client-server``
 
 Event listener example: Start the pipeline from an external event
 
