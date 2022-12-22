@@ -1,29 +1,28 @@
 # WildFly s2i pipeline for Openshift
 
 A pipeline to produce an application image using the WildFly s2i builder and runtime image. Image built using Buildah.
-The pipeline optionally creates a deployment.
+The pipeline deploys the application and exposes a route to it. Deployment can be disabled.
 
 ## Pre-requisites
 
 *  Logged into an OpenShift cluster (such as OpenShift Sandbox).
 
-## Install the WildFly s2i task and pipeline
+## Create the WildFly s2i task and pipeline
 
 * ``oc create --filename wildfly-s2i-build-task.yaml``
 * ``oc create --filename wildfly-s2i-build-pipeline.yaml``
 
-## Create a PVC (Maven cache and shared data between tasks)
+## Create a PersistentVolumeClaim (Maven cache and shared data between tasks)
 
 * ``oc create --filename  pvc-sources-maven.yaml``
 
-## Example: Build an image, create a POD and service
+## PipelineRun example
 
 * Build: ``oc create --filename examples/test-app-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
 
 ## Event listener example: Start the pipeline from an external event
-
 
 ### Create the Template and Event listener (a service named el-test-app-event-listener is created and exposed)
 

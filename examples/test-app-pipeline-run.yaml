@@ -7,11 +7,11 @@ spec:
   - name: shared-data
     subPath: sources
     persistentVolumeClaim:
-      claimName: maven-cache
+      claimName: wildfly-pipeline-workspace
   - name: maven-cache
     subPath: maven-repo-cache
     persistentVolumeClaim:
-      claimName: maven-cache
+      claimName: wildfly-pipeline-workspace
   pipelineRef:
     name: wildfly-s2i-build-pipeline-os
   params:

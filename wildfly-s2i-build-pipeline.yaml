@@ -100,5 +100,5 @@ spec:
       params:
       - name: SCRIPT
         value: |
-          oc new-app --docker-image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName)
-          oc expose service/$(params.deploymentName)
+          oc new-app --docker-image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName) || true
+          oc expose service/$(params.deploymentName) || true
