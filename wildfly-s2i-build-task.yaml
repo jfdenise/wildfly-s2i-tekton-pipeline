@@ -42,7 +42,7 @@ spec:
     - name: dockerBuildContext
       description: The path of the build context.
   steps:
-    - name: build-application
+    - name: s2i-build
       securityContext:
         runAsUser: 0
       image: "$(params.builderImage):$(params.imageVersion)"
@@ -74,15 +74,21 @@ spec:
         
         #Assembly expects source to be in src sub directory of S2I_DESTINATION_DIR
         srcDir="$WORKSPACE_SRC_PATH"
-        if [ ! -z "$WORKSPACE_SRC_CONTEXT_DIR" ]; then
-          srcDir="$srcDir/$WORKSPACE_SRC_CONTEXT_DIR"
-        fi
+
         s2iDestinationDir="$WORKSPACE_SRC_PATH/s2i_destination_dir"
-        s2iSourceDir="$s2iDestinationDir/src"
-        mkdir -p "$s2iSourceDir"
-        mv "$srcDir"/* "$s2iSourceDir"
+        rm -rf "$s2iDestinationDir"
         export S2I_DESTINATION_DIR="$s2iDestinationDir"
-        
+        if [ "$(ls -A $srcDir)" ]; then
+          if [ ! -z "$WORKSPACE_SRC_CONTEXT_DIR" ]; then
+            srcDir="$srcDir/$WORKSPACE_SRC_CONTEXT_DIR"
+          fi
+          s2iSourceDir="$s2iDestinationDir/src"
+          mkdir -p "$s2iSourceDir"
+          mv "$srcDir"/* "$s2iSourceDir"
+        else
+          echo "No sources to build found"
+          mkdir -p "$s2iDestinationDir"
+        fi
         if [ ! -z "$_ARTIFACT_DIR" ]; then
           export ARTIFACT_DIR="$_ARTIFACT_DIR"
         fi

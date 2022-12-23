@@ -1,14 +1,23 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: wildfly-s2i-build-builder-pipeline-os
+  name: wildfly-s2i-build-custom-builder-pipeline-os
 spec:
   params:
     - name: builderName
+    - name: layers
+    - name: extraFeaturePacks
+      default: ""
+    - name: wildflyFeaturePack
+      default: "org.wildfly:wildfly-galleon-pack"
+    - name: wildflyVersion
+      default: "27.0.0.Final"
     - name: namespace
       default: "$(context.pipelineRun.namespace)"
     - name: dockerRegistry
       default: "image-registry.openshift-image-registry.svc:5000"
+    - name: imageVersion
+      default: "latest"
   workspaces:
     - name: shared-data
     - name: maven-cache
@@ -21,38 +30,20 @@ spec:
         value: "$(params.namespace)"
       - name: builderName
         value: "$(params.builderName)"
-    - name: git-clone-builder-repo
-      runAfter: 
-        - check-builder-image
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
-      taskRef:
-        name: git-clone
-        kind: ClusterTask
-      workspaces:
-        - name: output
-          workspace: shared-data
-      params:
-        - name: url
-          value: "http://github.com/wildfly/wildfly-s2i"
-        - name: revision
-          value: "main"
-        - name: deleteExisting
-          value: "true"
-        - name: depth
-          value: "1"
     - name: wildfly-s2i-build-builder
       taskRef:
-        name: wildfly-s2i-build-builder-os-task
+        name: wildfly-s2i-build-os-task
       params:
-        - name: builderName
-          value: "$(params.builderName)"
-        - name: contextDir
-          value: "wildfly-builders"
+        - name: GALLEON_PROVISION_LAYERS
+          value: "$(params.layers)"
+        - name: GALLEON_PROVISION_FEATURE_PACKS
+          value: "$(params.wildflyFeaturePack):$(params.wildflyVersion),$(params.extraFeaturePacks)"
+        - name: imageVersion
+          value: "$(params.imageVersion)"
+        - name: runtimeImage
+          value: "quay.io/wildfly/wildfly-s2i"
       runAfter: 
-        - git-clone-builder-repo
+        - check-builder-image
       when:
       - input: "$(tasks.check-builder-image.results.builderAvailable)"
         operator: in

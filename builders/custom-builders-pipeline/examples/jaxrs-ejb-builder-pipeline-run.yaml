@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: jaxrs-ejb-builder
+spec:
+  workspaces:
+  - name: shared-data
+    subPath: sources-custom-builder
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  - name: maven-cache
+    subPath: maven-repo-cache
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  pipelineRef:
+    name: wildfly-s2i-build-custom-builder-pipeline-os
+  params:
+    - name: builderName
+      value: "jaxrs-ejb-server"
+    - name: layers
+      value: "jaxrs-server,ejb"

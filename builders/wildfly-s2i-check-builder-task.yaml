@@ -8,6 +8,9 @@ spec:
      type: string
    - name: namespace
      type: string
+   - name: failsOnError
+     type: string
+     default: "false"
   results:
     - name: builderAvailable
       description: true if the builder is available, false otherwise
@@ -21,6 +24,10 @@ spec:
           if [ -z "$res" ]; then
             echo "Builder image $(params.builderName) doesn't exist"
             available="false"
+            fail="$(params.failsOnError)"
+            if  [ "$fail" == "true" ]; then
+              exit 1
+            fi
           else
             available="true"
             echo "Builder image $(params.builderName) exists"

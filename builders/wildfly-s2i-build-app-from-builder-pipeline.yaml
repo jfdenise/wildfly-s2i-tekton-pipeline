@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: wildfly-s2i-build-builder-and-app-pipeline-os
+  name: wildfly-s2i-build-app-from-builder-pipeline-os
 spec:
   params:
     - name: gitUrl
@@ -23,97 +23,31 @@ spec:
       default: ""
     - name: ARTIFACT_DIR
       default: ""
-    - name: jdk
+    - name: imageVersion
       default: "latest"
   workspaces:
-    - name: shared-data-app
-    - name: shared-data-builder
+    - name: shared-data
     - name: maven-cache
   tasks:
     - name: check-builder-image
       taskRef:
         name: wildfly-s2i-check-builder-task-os
       params:
+      - name: failsOnError
+        value: "true"
       - name: namespace
         value: "$(params.namespace)"
       - name: builderName
         value: "$(params.builderName)"
-    - name: git-clone-builder-repo
-      runAfter: 
-        - check-builder-image
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
-      taskRef:
-        name: git-clone
-        kind: ClusterTask
-      workspaces:
-        - name: output
-          workspace: shared-data-builder
-      params:
-        - name: url
-          value: "http://github.com/wildfly/wildfly-s2i"
-        - name: revision
-          value: "main"
-        - name: deleteExisting
-          value: "true"
-        - name: depth
-          value: "1"
-    - name: wildfly-s2i-build-builder
-      taskRef:
-        name: wildfly-s2i-build-os-task
-      params:
-        - name: contextDir
-          value: "wildfly-builders"
-        - name: MAVEN_ARGS_APPEND
-          value: "-f $(params.builderName)/pom.xml"
-        - name: _ARTIFACT_DIR
-          value: "$(params.builderName)/target"
-        - name: imageVersion
-          value: "$(params.jdk)"
-        - name: runtimeImage
-          value: "quay.io/wildfly/wildfly-s2i"
-      runAfter: 
-        - git-clone-builder-repo
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
-      workspaces:
-        - name: sources
-          workspace: shared-data-builder
-        - name: maven-cache
-          workspace: maven-cache
-    - name: buildah-build-push
-      taskRef:
-        name: buildah
-        kind: ClusterTask
-      params:
-        - name: IMAGE
-          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderName)"
-        - name: DOCKERFILE
-          value: "$(tasks.wildfly-s2i-build-builder.results.dockerFile)"
-        - name: CONTEXT
-          value: "$(tasks.wildfly-s2i-build-builder.results.dockerBuildContext)"
-        - name: TLSVERIFY
-          value: "false" 
-      runAfter: 
-        - wildfly-s2i-build-builder
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
-      workspaces:
-        - name: source
-          workspace: shared-data-builder
     - name: git-clone-repo
+      runAfter:
+        - check-builder-image
       taskRef:
         name: git-clone
         kind: ClusterTask
       workspaces:
         - name: output
-          workspace: shared-data-app
+          workspace: shared-data
       params:
         - name: url
           value: "$(params.gitUrl)"
@@ -141,10 +75,9 @@ spec:
           value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderName)"
       runAfter: 
         - git-clone-repo
-        - buildah-build-push
       workspaces:
         - name: sources
-          workspace: shared-data-app
+          workspace: shared-data
         - name: maven-cache
           workspace: maven-cache
     - name: buildah-build-push-runtime-app
@@ -164,7 +97,7 @@ spec:
         - wildfly-s2i-build-app
       workspaces:
         - name: source
-          workspace: shared-data-app
+          workspace: shared-data
     - name: deploy
       taskRef:
         name: openshift-client

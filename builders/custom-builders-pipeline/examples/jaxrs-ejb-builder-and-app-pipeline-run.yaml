@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: jaxrs-ejb-builder-and-app
+spec:
+  workspaces:
+  - name: shared-data-app
+    subPath: sources-app
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  - name: shared-data-builder
+    subPath: sources-builder
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  - name: maven-cache
+    subPath: maven-repo-cache
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  pipelineRef:
+    name: wildfly-s2i-build-builder-and-app-pipeline-os
+  params:
+    - name: gitUrl
+      value: "https://github.com/wildfly/quickstart.git"
+    - name: contextDir
+      value: "helloworld"
+    - name: deploymentName
+      value: "helloworld"
+    - name: builderName
+      value: "jaxrs-ejb-server"
