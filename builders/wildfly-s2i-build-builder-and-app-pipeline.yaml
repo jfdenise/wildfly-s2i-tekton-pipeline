@@ -26,7 +26,8 @@ spec:
     - name: jdk
       default: "latest"
   workspaces:
-    - name: shared-data
+    - name: shared-data-app
+    - name: shared-data-builder
     - name: maven-cache
   tasks:
     - name: check-builder-image
@@ -49,7 +50,7 @@ spec:
         kind: ClusterTask
       workspaces:
         - name: output
-          workspace: shared-data
+          workspace: shared-data-builder
       params:
         - name: url
           value: "http://github.com/wildfly/wildfly-s2i"
@@ -81,7 +82,7 @@ spec:
         values: ["false"]
       workspaces:
         - name: sources
-          workspace: shared-data
+          workspace: shared-data-builder
         - name: maven-cache
           workspace: maven-cache
     - name: buildah-build-push
@@ -105,14 +106,14 @@ spec:
         values: ["false"]
       workspaces:
         - name: source
-          workspace: shared-data
+          workspace: shared-data-builder
     - name: git-clone-repo
       taskRef:
         name: git-clone
         kind: ClusterTask
       workspaces:
         - name: output
-          workspace: shared-data
+          workspace: shared-data-app
       params:
         - name: url
           value: "$(params.gitUrl)"
@@ -140,9 +141,10 @@ spec:
           value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderName)"
       runAfter: 
         - git-clone-repo
+        - buildah-build-push
       workspaces:
         - name: sources
-          workspace: shared-data
+          workspace: shared-data-app
         - name: maven-cache
           workspace: maven-cache
     - name: buildah-build-push-runtime-app
@@ -162,7 +164,7 @@ spec:
         - wildfly-s2i-build-app
       workspaces:
         - name: source
-          workspace: shared-data
+          workspace: shared-data-app
     - name: deploy
       taskRef:
         name: openshift-client
