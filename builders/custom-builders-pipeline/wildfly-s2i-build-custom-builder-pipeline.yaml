@@ -22,14 +22,6 @@ spec:
     - name: shared-data
     - name: maven-cache
   tasks:
-    - name: check-builder-image
-      taskRef:
-        name: wildfly-s2i-check-builder-task-os
-      params:
-      - name: namespace
-        value: "$(params.namespace)"
-      - name: builderName
-        value: "$(params.builderName)"
     - name: wildfly-s2i-build-builder
       taskRef:
         name: wildfly-s2i-build-os-task
@@ -42,12 +34,8 @@ spec:
           value: "$(params.imageVersion)"
         - name: runtimeImage
           value: "quay.io/wildfly/wildfly-s2i"
-      runAfter: 
-        - check-builder-image
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
+        - name: expectSources
+          value: "false"
       workspaces:
         - name: sources
           workspace: shared-data
@@ -68,10 +56,6 @@ spec:
           value: "false" 
       runAfter: 
         - wildfly-s2i-build-builder
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
       workspaces:
         - name: source
           workspace: shared-data

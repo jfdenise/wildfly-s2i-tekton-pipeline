@@ -15,21 +15,7 @@ spec:
     - name: shared-data
     - name: maven-cache
   tasks:
-    - name: check-builder-image
-      taskRef:
-        name: wildfly-s2i-check-builder-task-os
-      params:
-      - name: namespace
-        value: "$(params.namespace)"
-      - name: builderName
-        value: "$(params.builderName)"
     - name: git-clone-builder-repo
-      runAfter: 
-        - check-builder-image
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
       taskRef:
         name: git-clone
         kind: ClusterTask
@@ -61,10 +47,6 @@ spec:
           value: "quay.io/wildfly/wildfly-s2i"
       runAfter: 
         - git-clone-builder-repo
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
       workspaces:
         - name: sources
           workspace: shared-data
@@ -85,10 +67,6 @@ spec:
           value: "false" 
       runAfter: 
         - wildfly-s2i-build-builder
-      when:
-      - input: "$(tasks.check-builder-image.results.builderAvailable)"
-        operator: in
-        values: ["false"]
       workspaces:
         - name: source
           workspace: shared-data

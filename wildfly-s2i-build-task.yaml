@@ -31,6 +31,9 @@ spec:
    - name: runtimeImage
      type: string
      default: "quay.io/wildfly/wildfly-runtime"
+   - name: expectSources
+     type: string
+     default: "true"
   workspaces:
     - name: sources
       description: The src dir
@@ -78,7 +81,10 @@ spec:
         s2iDestinationDir="$WORKSPACE_SRC_PATH/s2i_destination_dir"
         rm -rf "$s2iDestinationDir"
         export S2I_DESTINATION_DIR="$s2iDestinationDir"
-        if [ "$(ls -A $srcDir)" ]; then
+        echo "source content"
+        ls -al  $srcDir
+        expectSources=$(params.expectSources)
+        if [ "$expectSources" == "true" ]; then
           if [ ! -z "$WORKSPACE_SRC_CONTEXT_DIR" ]; then
             srcDir="$srcDir/$WORKSPACE_SRC_CONTEXT_DIR"
           fi
@@ -86,7 +92,7 @@ spec:
           mkdir -p "$s2iSourceDir"
           mv "$srcDir"/* "$s2iSourceDir"
         else
-          echo "No sources to build found"
+          echo "No sources to build"
           mkdir -p "$s2iDestinationDir"
         fi
         if [ ! -z "$_ARTIFACT_DIR" ]; then
@@ -97,9 +103,9 @@ spec:
         
         # Generate Dockerfile file and create docker build context
         # To be consumed by task that does docker build (kaniko, buildah,...)
-        dockerDirName="docker-build"
+        dockerDirName="wf-docker-build"
         dockerFileName="Dockerfile"
-        dockerBuildContext="$WORKSPACE_SRC_PATH/$dockerDirName"
+        dockerBuildContext="$s2iDestinationDir/$dockerDirName"
         dockerFile="$dockerBuildContext/$dockerFileName"
         mkdir -p "$dockerBuildContext"
         mv "$JBOSS_HOME" "$dockerBuildContext"
@@ -112,5 +118,5 @@ spec:
         EOF
 
         # The paths are relative to the shared workspace.
-        echo -n "$dockerDirName/$dockerFileName" > $(results.dockerFile.path)
-        echo -n "$dockerDirName" > $(results.dockerBuildContext.path)
+        echo -n "s2i_destination_dir/$dockerDirName/$dockerFileName" > $(results.dockerFile.path)
+        echo -n "s2i_destination_dir/$dockerDirName" > $(results.dockerBuildContext.path)
