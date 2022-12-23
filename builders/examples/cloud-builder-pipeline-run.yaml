@@ -13,7 +13,7 @@ spec:
     persistentVolumeClaim:
       claimName: wildfly-pipeline-workspace
   pipelineRef:
-    name: wildfly-s2i-build-builder-pipeline-os
+    name: wildfly-s2i-build-builder-and-app-pipeline-os
   params:
     - name: gitUrl
       value: "https://github.com/wildfly/quickstart.git"

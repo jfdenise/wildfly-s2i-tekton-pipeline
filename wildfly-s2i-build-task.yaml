@@ -22,6 +22,15 @@ spec:
    - name: GALLEON_PROVISION_FEATURE_PACKS
      type: string
      default: ""
+   - name: imageVersion
+     type: string
+     default: "latest"
+   - name: builderImage
+     type: string
+     default: "quay.io/wildfly/wildfly-s2i"
+   - name: runtimeImage
+     type: string
+     default: "quay.io/wildfly/wildfly-runtime"
   workspaces:
     - name: sources
       description: The src dir
@@ -36,7 +45,7 @@ spec:
     - name: build-application
       securityContext:
         runAsUser: 0
-      image: "quay.io/wildfly/wildfly-s2i:latest"
+      image: "$(params.builderImage):$(params.imageVersion)"
       workingDir: $(workspaces.sources.path)
       env:
         - name: WORKSPACE_SRC_PATH
@@ -55,6 +64,10 @@ spec:
           value: $(params.GALLEON_PROVISION_LAYERS)
         - name: GALLEON_PROVISION_FEATURE_PACKS
           value: $(params.GALLEON_PROVISION_FEATURE_PACKS)
+        - name: WILDFLY_RUNTIME_IMAGE
+          value: $(params.runtimeImage)
+        - name: WILDFLY_RUNTIME_IMAGE_VERSION
+          value: $(params.imageVersion)
       script: |
         #!/usr/bin/env sh
         set -eu
@@ -85,7 +98,7 @@ spec:
         mkdir -p "$dockerBuildContext"
         mv "$JBOSS_HOME" "$dockerBuildContext"
          cat <<EOF > "$dockerFile"
-        FROM quay.io/wildfly/wildfly-runtime:latest
+        FROM $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION
         COPY server \$JBOSS_HOME
         USER root
         RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME
