@@ -13,7 +13,7 @@ spec:
     persistentVolumeClaim:
       claimName: wildfly-pipeline-workspace
   pipelineRef:
-    name: wildfly-s2i-build-custom-builder-pipeline-os
+    name: wildfly-s2i-builder-pipeline
   params:
     - name: builderName
       value: "jaxrs-ejb-server"

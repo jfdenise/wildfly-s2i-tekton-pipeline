@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: wildfly-s2i-build-custom-builder-pipeline-os
+  name: wildfly-s2i-builder-pipeline
 spec:
   params:
     - name: builderName
@@ -24,7 +24,7 @@ spec:
   tasks:
     - name: wildfly-s2i-build-builder
       taskRef:
-        name: wildfly-s2i-build-os-task
+        name: wildfly-s2i-build-task
       params:
         - name: GALLEON_PROVISION_LAYERS
           value: "$(params.layers)"

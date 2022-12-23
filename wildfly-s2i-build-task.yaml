@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: wildfly-s2i-build-os-task
+  name: wildfly-s2i-build-task
 spec:
   params:
    - name: contextDir

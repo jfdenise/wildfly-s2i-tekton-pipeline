@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: wildfly-s2i-build-pipeline-os
+  name: wildfly-s2i-build-pipeline
 spec:
   params:
     - name: gitUrl
@@ -48,7 +48,7 @@ spec:
           value: "1"
     - name: wildfly-s2i-build
       taskRef:
-        name: wildfly-s2i-build-os-task
+        name: wildfly-s2i-build-task
       params:
         - name: contextDir
           value: "$(params.contextDir)"
@@ -100,5 +100,5 @@ spec:
       params:
       - name: SCRIPT
         value: |
-          oc new-app --docker-image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName) || true
+          oc new-app --image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName) || true
           oc expose service/$(params.deploymentName) || true

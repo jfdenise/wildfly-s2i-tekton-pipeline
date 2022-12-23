@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: wildfly-s2i-build-app-from-builder-pipeline-os
+  name: wildfly-s2i-build-app-pipeline
 spec:
   params:
     - name: gitUrl
@@ -99,5 +99,5 @@ spec:
       params:
       - name: SCRIPT
         value: |
-          oc new-app --docker-image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName) || true
+          oc new-app --image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName) || true
           oc expose service/$(params.deploymentName) || true
