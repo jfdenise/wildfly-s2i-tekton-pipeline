@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: jaxrs-ejb-builder
+spec:
+  workspaces:
+  - name: shared-data
+    subPath: sources-custom-builder
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  - name: maven-cache
+    subPath: maven-repo-cache
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  pipelineRef:
+    name: wildfly-s2i-build-custom-builder-pipeline-os
+  params:
+    - name: builderName
+      value: "jaxrs-postgresql-driver-server"
+    - name: extraFeaturePacks
+      value: "org.wildfly:wildfly-datasources-galleon-pack:3.0.1.Final"
+    - name: wildflyVersion
+      value: "27.0.1.Final"
+    - name: layers
+      value: "jaxrs-server,ejb,postgresql-driver"
