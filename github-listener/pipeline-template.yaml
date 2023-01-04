@@ -20,7 +20,7 @@ spec:
         name: wildfly-s2i-build-pipeline-os
       params:
         - name: deploymentName
-          value: "test-app"
+          value: "helloworld"
         - name: deploy
           value: "false"
         - name: gitUrl
@@ -28,7 +28,7 @@ spec:
         - name: revision
           value: "$(tt.params.git-revision)"
         - name: contextDir
-          value: "test/test-app"
+          value: "helloworld"
       workspaces:
       - name: shared-data
         subPath: sources

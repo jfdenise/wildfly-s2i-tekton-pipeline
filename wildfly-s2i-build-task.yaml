@@ -3,42 +3,59 @@ kind: Task
 metadata:
   name: wildfly-s2i-build-task
 spec:
+  description: >-
+    WildFly s2i build task. This tasks operates an S2I build then generates a DockerFile to produce a runtime image
+    containing the provision WildFly server and deployments (if any).
+    This task creates a dockerFile result and a dockerBuildContext result to be consumed by following task in the pipeline
+    in order to build the runtime image.
   params:
    - name: contextDir
      type: string
      default: ""
+     description: "The sub-directory where the application source code exists."
    - name: MAVEN_OPTS
      type: string
      default: ""
+     description: "JVM options passed to maven. Computed automatically at build time."
    - name: MAVEN_ARGS_APPEND
      type: string
      default: ""
-   - name: _ARTIFACT_DIR
+     description: "Additional Maven arguments."
+   - name: MAVEN_S2I_ARTIFACT_DIRS
      type: string
      default: ""
+     description: "Relative paths of source directories to scan for build output. Defaults to **target**"
    - name: GALLEON_PROVISION_LAYERS
      type: string
      default: ""
+     description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon layers to provision."
    - name: GALLEON_PROVISION_FEATURE_PACKS
      type: string
      default: ""
+     description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon feature-packs to provision."
    - name: imageVersion
      type: string
      default: "latest"
+     description: "WildFly s2i builder and runtime image versions"
    - name: builderImage
      type: string
      default: "quay.io/wildfly/wildfly-s2i"
+     description: "WildFly s2i builder image to use. Can reference a custom WildFly builder image."
    - name: runtimeImage
      type: string
      default: "quay.io/wildfly/wildfly-runtime"
+     description: "WildFly s2i runtime image to use when generating the application image DockerFile"
    - name: expectSources
      type: string
      default: "true"
+     description: >-
+       When no sources are expected (eg: when building a custom WildFly builder image from GALLEON_PROVISION_XXX env variables) 
+       set this env variable  to false.
   workspaces:
     - name: sources
-      description: The src dir
+      description: The directory containing the sources.
     - name: maven-cache
-      description: The maven repo cache
+      description: The maven repository cache
   results:
     - name: dockerFile
       description: The generated docker file path.
@@ -51,18 +68,12 @@ spec:
       image: "$(params.builderImage):$(params.imageVersion)"
       workingDir: $(workspaces.sources.path)
       env:
-        - name: WORKSPACE_SRC_PATH
-          value: $(workspaces.sources.path)
-        - name: WORKSPACE_SRC_CONTEXT_DIR
-          value: $(params.contextDir)
         - name: MAVEN_ARGS_APPEND
           value: $(params.MAVEN_ARGS_APPEND)
         - name: MAVEN_OPTS
           value: $(params.MAVEN_OPTS)
         - name: MAVEN_LOCAL_REPO
           value: $(workspaces.maven-cache.path)
-        - name: _ARTIFACT_DIR
-          value: $(params._ARTIFACT_DIR)
         - name: GALLEON_PROVISION_LAYERS
           value: $(params.GALLEON_PROVISION_LAYERS)
         - name: GALLEON_PROVISION_FEATURE_PACKS
@@ -76,17 +87,18 @@ spec:
         set -eu
         
         #Assembly expects source to be in src sub directory of S2I_DESTINATION_DIR
-        srcDir="$WORKSPACE_SRC_PATH"
+        srcDir="$(workspaces.sources.path)"
 
-        s2iDestinationDir="$WORKSPACE_SRC_PATH/s2i_destination_dir"
+        s2iDestinationDir="$srcDir/s2i_destination_dir"
         rm -rf "$s2iDestinationDir"
         export S2I_DESTINATION_DIR="$s2iDestinationDir"
         echo "source content"
         ls -al  $srcDir
         expectSources=$(params.expectSources)
         if [ "$expectSources" == "true" ]; then
-          if [ ! -z "$WORKSPACE_SRC_CONTEXT_DIR" ]; then
-            srcDir="$srcDir/$WORKSPACE_SRC_CONTEXT_DIR"
+          contextDir="$(params.contextDir)"
+          if [ ! -z "$contextDir" ]; then
+            srcDir="$srcDir/$contextDir"
           fi
           s2iSourceDir="$s2iDestinationDir/src"
           mkdir -p "$s2iSourceDir"
@@ -95,8 +107,9 @@ spec:
           echo "No sources to build"
           mkdir -p "$s2iDestinationDir"
         fi
-        if [ ! -z "$_ARTIFACT_DIR" ]; then
-          export ARTIFACT_DIR="$_ARTIFACT_DIR"
+        artifactDir="$(params.MAVEN_S2I_ARTIFACT_DIRS)"
+        if [ ! -z "$artifactDir" ]; then
+          export MAVEN_S2I_ARTIFACT_DIRS="$artifactDir"
         fi
         
         /usr/local/s2i/assemble

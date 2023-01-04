@@ -5,27 +5,43 @@ metadata:
 spec:
   params:
     - name: gitUrl
+      description: "URL of the git repository"
     - name: revision
       default: "main"
+      description: "Revision of the git repository"
     - name: contextDir
       default: ""
+      description: "The sub-directory where the application source code exists."
+    - name: imageVersion
+      type: string
+      default: "latest"
+      description: "WildFly s2i builder and runtime image versions."
     - name: namespace
       default: "$(context.pipelineRun.namespace)"
+      description: "The namespace where to push the image"
     - name: dockerRegistry
       default: "image-registry.openshift-image-registry.svc:5000"
+      description: "The docker Registry URL"
     - name: deploy
       default: "true"
+      description: "Create a deployment from the generated image and expose the service."
     - name: deploymentName
+      description: "The deployment name."
     - name: MAVEN_ARGS_APPEND
       default: ""
+      description: "Additional Maven arguments."
     - name: MAVEN_OPTS
       default: ""
-    - name: ARTIFACT_DIR
+      description: "JVM options passed to maven. Computed automatically at build time."
+    - name: MAVEN_S2I_ARTIFACT_DIRS
       default: ""
+      description: "Relative paths of source directories to scan for build output. Defaults to **target**"
     - name: GALLEON_PROVISION_LAYERS
       default: ""
+      description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon layers to provision."
     - name: GALLEON_PROVISION_FEATURE_PACKS
       default: ""
+      description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon feature-packs to provision."
   workspaces:
     - name: shared-data
     - name: maven-cache
@@ -50,14 +66,16 @@ spec:
       taskRef:
         name: wildfly-s2i-build-task
       params:
+        - name: imageVersion
+          value: "$(params.imageVersion)"
         - name: contextDir
           value: "$(params.contextDir)"
         - name: MAVEN_ARGS_APPEND
           value: "$(params.MAVEN_ARGS_APPEND)"
         - name: MAVEN_OPTS
           value: "$(params.MAVEN_OPTS)"
-        - name: _ARTIFACT_DIR
-          value: "$(params.ARTIFACT_DIR)"
+        - name: MAVEN_S2I_ARTIFACT_DIRS
+          value: "$(params.MAVEN_S2I_ARTIFACT_DIRS)"
         - name: GALLEON_PROVISION_LAYERS
           value: "$(params.GALLEON_PROVISION_LAYERS)"
         - name: GALLEON_PROVISION_FEATURE_PACKS
