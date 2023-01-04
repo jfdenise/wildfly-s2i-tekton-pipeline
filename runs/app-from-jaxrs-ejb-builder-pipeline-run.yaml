@@ -16,9 +16,9 @@ spec:
     name: wildfly-s2i-build-app-pipeline
   params:
     - name: gitUrl
-      value: "https://github.com/wildfly/quickstart.git"
+      value: "https://github.com/wildfly/wildfly-s2i"
     - name: contextDir
-      value: "helloworld"
+      value: "examples/optimized-builder"
     - name: deploymentName
       value: "helloworld"
     - name: builderName
