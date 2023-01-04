@@ -33,10 +33,14 @@ spec:
      type: string
      default: ""
      description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon feature-packs to provision."
-   - name: imageVersion
+   - name: builderImageVersion
      type: string
      default: "latest"
-     description: "WildFly s2i builder and runtime image versions"
+     description: "WildFly s2i builder image version."
+   - name: runtimeImageVersion
+     type: string
+     default: "latest"
+     description: "WildFly runtime image version."
    - name: builderImage
      type: string
      default: "quay.io/wildfly/wildfly-s2i"
@@ -65,7 +69,7 @@ spec:
     - name: s2i-build
       securityContext:
         runAsUser: 0
-      image: "$(params.builderImage):$(params.imageVersion)"
+      image: "$(params.builderImage):$(params.builderImageVersion)"
       workingDir: $(workspaces.sources.path)
       env:
         - name: MAVEN_ARGS_APPEND
@@ -81,7 +85,7 @@ spec:
         - name: WILDFLY_RUNTIME_IMAGE
           value: $(params.runtimeImage)
         - name: WILDFLY_RUNTIME_IMAGE_VERSION
-          value: $(params.imageVersion)
+          value: $(params.runtimeImageVersion)
       script: |
         #!/usr/bin/env sh
         set -eu

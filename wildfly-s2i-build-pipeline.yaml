@@ -15,7 +15,7 @@ spec:
     - name: imageVersion
       type: string
       default: "latest"
-      description: "WildFly s2i builder and runtime image versions."
+      description: "WildFly s2i builder and runtime images version. Can be latest, latest-jdk11 or latest-jdk17"
     - name: namespace
       default: "$(context.pipelineRun.namespace)"
       description: "The namespace where to push the image"
@@ -66,7 +66,9 @@ spec:
       taskRef:
         name: wildfly-s2i-build-task
       params:
-        - name: imageVersion
+        - name: builderImageVersion
+          value: "$(params.imageVersion)"
+        - name: runtimeImageVersion
           value: "$(params.imageVersion)"
         - name: contextDir
           value: "$(params.contextDir)"

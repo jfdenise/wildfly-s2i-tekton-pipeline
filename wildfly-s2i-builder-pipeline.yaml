@@ -5,19 +5,27 @@ metadata:
 spec:
   params:
     - name: builderName
+      description: "The name of the generated WildFly S2I builder. This name is used to produce the builder ImageStream."
     - name: layers
+      description: "The set of Galleon layers to use when provisioning the WildFly server."
     - name: extraFeaturePacks
       default: ""
+      description: "Any extra Galleon feature-packs GAV to use in addition to the WildFly Galleon feature-pack."
     - name: wildflyFeaturePack
       default: "org.wildfly:wildfly-galleon-pack"
+      description: "GroupId:ArtifactId of the WildFly feature-pack used to provision the WildFly server."
     - name: wildflyVersion
-      default: "27.0.0.Final"
+      default: "27.0.1.Final"
+      description: "WildFly version used to provision the server"
     - name: namespace
       default: "$(context.pipelineRun.namespace)"
+      description: "The namespace where to push the image"
     - name: dockerRegistry
       default: "image-registry.openshift-image-registry.svc:5000"
+      description: "The docker Registry URL"
     - name: imageVersion
       default: "latest"
+      description: "WildFly s2i builder image version. Can be latest, latest-jdk11 or latest-jdk17"
   workspaces:
     - name: shared-data
     - name: maven-cache
@@ -30,7 +38,9 @@ spec:
           value: "$(params.layers)"
         - name: GALLEON_PROVISION_FEATURE_PACKS
           value: "$(params.wildflyFeaturePack):$(params.wildflyVersion),$(params.extraFeaturePacks)"
-        - name: imageVersion
+        - name: builderImageVersion
+          value: "$(params.imageVersion)"
+        - name: runtimeImageVersion
           value: "$(params.imageVersion)"
         - name: runtimeImage
           value: "quay.io/wildfly/wildfly-s2i"
@@ -47,7 +57,7 @@ spec:
         kind: ClusterTask
       params:
         - name: IMAGE
-          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderName)"
+          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderName):$(params.imageVersion)"
         - name: DOCKERFILE
           value: "$(tasks.wildfly-s2i-build-builder.results.dockerFile)"
         - name: CONTEXT
