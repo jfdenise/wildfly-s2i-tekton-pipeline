@@ -77,6 +77,9 @@ At the end of the pipeline run, the deployment `helloworld` is scaled to 1 and t
 
 ## Event listener example: Start the pipeline from an external event
 
+NOTE: We are using a fork of `github.com/wildfly/wildfly-s2i` repository. If not already done, fork this repository and clone it.
+Create a branch named `test-openshift-pipeline`.
+
 ### Create the Template and Event listener (a service named el-test-app-event-listener is created and exposed)
 
 * ``oc apply --filename github-listener/pipeline-template.yaml``
@@ -87,8 +90,10 @@ At the end of the pipeline run, the deployment `helloworld` is scaled to 1 and t
 
 * ``echo $(oc  get route el-test-app-event-listener --template='http://{{.spec.host}}')``
 * Copy the URL printed in the console.
-* Add a webhook in your git repository
+* Add a webhook in your git repository fork (Settings/Webhooks) using this URL.
 
 ### Push a new commit
+
+In your cloned repository push an empty commit to activate the webhook and start a pipeline run.
 
 `` git commit -m "empty-commit" --allow-empty && git push origin test-openshift-pipeline ``
