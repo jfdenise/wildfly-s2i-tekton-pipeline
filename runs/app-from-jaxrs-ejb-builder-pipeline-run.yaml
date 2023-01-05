@@ -23,5 +23,7 @@ spec:
       value: "helloworld"
     - name: builderImageStream
       value: "jaxrs-ejb-server-builder"
+   # In case the S2I build of your application tunes the WildFly server (launch script extensions, copied content, ...)
+   # Comment this parameter. Doing so the wildfly-runtime image will get used and the WildFly server will get copied over the runtime image.
     - name: runtimeImageStream
       value: "jaxrs-ejb-server"
