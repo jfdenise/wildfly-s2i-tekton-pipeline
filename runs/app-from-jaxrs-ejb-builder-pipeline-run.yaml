@@ -21,5 +21,7 @@ spec:
       value: "examples/optimized-builder"
     - name: deploymentName
       value: "helloworld"
-    - name: builderName
+    - name: builderImageStream
+      value: "jaxrs-ejb-server-builder"
+    - name: runtimeImageStream
       value: "jaxrs-ejb-server"

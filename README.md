@@ -5,10 +5,10 @@ We are defining 3 Tekton pipelines:
 * A pipeline that does a full S2I build. It provisions the WildFly server, deploys the application into it, generates an ImageStream
 and (optionally) creates a deployment and exposes the service.
 
-* A pipeline that provisions a WildFly server to produce a custom WildFly S2I builder imageStream 
+* A pipeline that provisions a WildFly server to produce a custom WildFly S2I builder and runtime imageStreams
 that can then be used to do an S2I build of an application.
 
-* A pipeline that build an application using a custom WildFly S2I builder image (produced by the previous pipeline). 
+* A pipeline that build an application using a custom WildFly S2I builder and runtime images (produced by the previous pipeline). 
 In such case, no WildFly server provisioning occurs. Simple copy of the war file is operated and a runtime image is produced. 
 Optionally a deployment is created and the service is exposed.
 
@@ -43,8 +43,8 @@ At the end of the pipeline run, the deployment `test-app` is scaled to 1 and the
 
 ## Custom WildFly s2i builder build Tekton pipeline example
 
-In this example we are producing a WildFly S2I builder allowing to build and run 
-applications requiring the `jaxrs-server` and `ejb` Galleon layers.
+In this example we are producing a custom WildFly S2I builder and runtime images allowing to build and run 
+applications that require the `jaxrs-server` and `ejb` Galleon layers.
 
 ### Create the pipeline
 
@@ -55,12 +55,12 @@ applications requiring the `jaxrs-server` and `ejb` Galleon layers.
 * Build: ``oc create --filename runs/jaxrs-ejb-builder-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-At the end of the run, the ImageStream `jaxrs-ejb-server:latest` is created. This image Stream will be used in the next example 
-to produce an application image.
+At the end of the run, the ImageStream `jaxrs-ejb-server-builder:latest` and `jaxrs-ejb-server:latest` are created. 
+These ImageStreams will be used in the next example to produce an application image.
 
-## Application build with custom WildFly s2i builder Tekton pipeline example
+## Application build with custom WildFly s2i builder and runtime Tekton pipeline example
 
-In this example we are re-using the `jaxrs-ejb-server` custom S2I builder to produce an application image 
+In this example we are re-using the `jaxrs-ejb-server-builder` and `jaxrs-ejb-server` ImageStreams to produce an application image 
 and scale / expose the deployment..
 
 ### Create the pipeline

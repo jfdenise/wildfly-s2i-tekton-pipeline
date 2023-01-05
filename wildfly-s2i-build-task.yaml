@@ -54,6 +54,16 @@ spec:
      default: "false"
      description: >-
        When building a custom WildFly S2I builder image, set this to true.
+   - name: deployOnlyRuntimeImageName
+     type: string
+     default: ""
+     description: "WildFly s2i runtime image name that must already contain a WildFly server."
+   - name: namespace
+     default: "$(context.pipelineRun.namespace)"
+     description: "The namespace where to push the image"
+   - name: dockerRegistry
+     default: "image-registry.openshift-image-registry.svc:5000"
+     description: "The docker Registry URL"
   workspaces:
     - name: sources
       description: The directory containing the sources.
@@ -130,6 +140,9 @@ spec:
         dockerBuildContext="$s2iDestinationDir/$dockerDirName"
         dockerFile="$dockerBuildContext/$dockerFileName"
         mkdir -p "$dockerBuildContext"
+        
+        deployOnlyRuntimeImageName=$(params.deployOnlyRuntimeImageName)
+        if [ -z "$deployOnlyRuntimeImageName" ]; then
         mv "$JBOSS_HOME" "$dockerBuildContext"
          cat <<EOF > "$dockerFile"
         FROM $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION
@@ -138,10 +151,16 @@ spec:
         RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME
         USER jboss
         EOF
-        echo "DONE1"
+        else
+        deployOnlyRuntimeImage=$(params.dockerRegistry)/$(params.namespace)/$(params.deployOnlyRuntimeImageName)
+        cp -r "$JBOSS_HOME/standalone/deployments" "$dockerBuildContext/"
+         cat <<EOF > "$dockerFile"
+        FROM $deployOnlyRuntimeImage:$WILDFLY_RUNTIME_IMAGE_VERSION
+        COPY deployments/* \$JBOSS_HOME/standalone/deployments
+        EOF
+        fi
         # If we are building a builder, generate the Docker file for it too.
         if [ "$buildBuilder" == "true" ]; then
-          echo "DONEX"
           builderDockerFileName="BuilderDockerfile"
           builderDockerFile="$dockerBuildContext/$builderDockerFileName"
            cat <<EOF > "$builderDockerFile"
@@ -153,7 +172,6 @@ spec:
         EOF
           echo -n "s2i_destination_dir/$dockerDirName/$builderDockerFileName" > $(results.builderDockerFile.path)
         fi
-        echo "DONE3"
         # The paths are relative to the shared workspace.
         echo -n "s2i_destination_dir/$dockerDirName/$dockerFileName" > $(results.dockerFile.path)
         echo -n "s2i_destination_dir/$dockerDirName" > $(results.dockerBuildContext.path)

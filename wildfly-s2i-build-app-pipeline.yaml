@@ -12,8 +12,8 @@ spec:
     - name: contextDir
       default: ""
       description: "The sub-directory where the application source code exists."
-    - name: builderName
-      description: "The name of the custom WildFly s2i builder to use. This builder ImageStream must have been previously generated."
+    - name: builderImageStream
+      description: "The Image Stream of the custom WildFly s2i builder to use. This builder ImageStream must have been previously generated."
     - name: namespace
       default: "$(context.pipelineRun.namespace)"
       description: "The namespace where to push the image"
@@ -37,6 +37,12 @@ spec:
     - name: imageVersion
       default: "latest"
       description: "Custom WildFly s2i builder and WildFly runtime images version. Can be latest, latest-jdk11 or latest-jdk17"
+    - name: runtimeImageStream
+      type: string
+      default: ""
+      description: >-
+       To avoid copying the provision server to a naked WildFly runtime image, set this parameter to reference a runtime image ImageStream that already contains 
+       a WildFly server.  Only the deployments will get copied to this runtime imager.
   workspaces:
     - name: shared-data
     - name: maven-cache
@@ -74,7 +80,13 @@ spec:
         - name: runtimeImageVersion
           value: "$(params.imageVersion)"
         - name: builderImage
-          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderName)"
+          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderImageStream)"
+        - name: deployOnlyRuntimeImageName
+          value: "$(params.runtimeImageStream)"
+        - name: namespace
+          value: "$(params.namespace)"
+        - name: dockerRegistry
+          value: "$(params.dockerRegistry)"
       runAfter: 
         - git-clone-repo
       workspaces:
