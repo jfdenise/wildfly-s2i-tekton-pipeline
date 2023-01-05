@@ -42,16 +42,32 @@ spec:
           value: "$(params.imageVersion)"
         - name: runtimeImageVersion
           value: "$(params.imageVersion)"
-        - name: runtimeImage
-          value: "quay.io/wildfly/wildfly-s2i"
-        - name: expectSources
-          value: "false"
+        - name: buildBuilder
+          value: "true"
       workspaces:
         - name: sources
           workspace: shared-data
         - name: maven-cache
           workspace: maven-cache
-    - name: buildah-build-push
+    - name: buildah-build-push-builder-image
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+        - name: IMAGE
+          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.builderName)-builder:$(params.imageVersion)"
+        - name: DOCKERFILE
+          value: "$(tasks.wildfly-s2i-build-builder.results.builderDockerFile)"
+        - name: CONTEXT
+          value: "$(tasks.wildfly-s2i-build-builder.results.dockerBuildContext)"
+        - name: TLSVERIFY
+          value: "false" 
+      runAfter: 
+        - wildfly-s2i-build-builder
+      workspaces:
+        - name: source
+          workspace: shared-data
+    - name: buildah-build-push-runtime-image
       taskRef:
         name: buildah
         kind: ClusterTask

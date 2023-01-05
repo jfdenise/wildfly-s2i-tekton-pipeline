@@ -49,12 +49,11 @@ spec:
      type: string
      default: "quay.io/wildfly/wildfly-runtime"
      description: "WildFly s2i runtime image to use when generating the application image DockerFile"
-   - name: expectSources
+   - name: buildBuilder
      type: string
-     default: "true"
+     default: "false"
      description: >-
-       When no sources are expected (eg: when building a custom WildFly builder image from GALLEON_PROVISION_XXX env variables) 
-       set this env variable  to false.
+       When building a custom WildFly S2I builder image, set this to true.
   workspaces:
     - name: sources
       description: The directory containing the sources.
@@ -62,7 +61,9 @@ spec:
       description: The maven repository cache
   results:
     - name: dockerFile
-      description: The generated docker file path.
+      description: The runtime image generated docker file path.
+    - name: builderDockerFile
+      description: The builder image generated docker file path. When buildBuilder is set to true. 
     - name: dockerBuildContext
       description: The path of the build context.
   steps:
@@ -84,8 +85,12 @@ spec:
           value: $(params.GALLEON_PROVISION_FEATURE_PACKS)
         - name: WILDFLY_RUNTIME_IMAGE
           value: $(params.runtimeImage)
+        - name: WILDFLY_BUILDER_IMAGE
+          value: $(params.builderImage)
         - name: WILDFLY_RUNTIME_IMAGE_VERSION
           value: $(params.runtimeImageVersion)
+        - name: WILDFLY_BUILDER_IMAGE_VERSION
+          value: $(params.builderImageVersion)
       script: |
         #!/usr/bin/env sh
         set -eu
@@ -98,8 +103,8 @@ spec:
         export S2I_DESTINATION_DIR="$s2iDestinationDir"
         echo "source content"
         ls -al  $srcDir
-        expectSources=$(params.expectSources)
-        if [ "$expectSources" == "true" ]; then
+        buildBuilder=$(params.buildBuilder)
+        if [ "$buildBuilder" == "false" ]; then
           contextDir="$(params.contextDir)"
           if [ ! -z "$contextDir" ]; then
             srcDir="$srcDir/$contextDir"
@@ -133,7 +138,22 @@ spec:
         RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME
         USER jboss
         EOF
-
+        echo "DONE1"
+        # If we are building a builder, generate the Docker file for it too.
+        if [ "$buildBuilder" == "true" ]; then
+          echo "DONEX"
+          builderDockerFileName="BuilderDockerfile"
+          builderDockerFile="$dockerBuildContext/$builderDockerFileName"
+           cat <<EOF > "$builderDockerFile"
+        FROM $WILDFLY_BUILDER_IMAGE:$WILDFLY_BUILDER_IMAGE_VERSION
+        COPY server \$JBOSS_HOME
+        USER root
+        RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME
+        USER jboss
+        EOF
+          echo -n "s2i_destination_dir/$dockerDirName/$builderDockerFileName" > $(results.builderDockerFile.path)
+        fi
+        echo "DONE3"
         # The paths are relative to the shared workspace.
         echo -n "s2i_destination_dir/$dockerDirName/$dockerFileName" > $(results.dockerFile.path)
         echo -n "s2i_destination_dir/$dockerDirName" > $(results.dockerBuildContext.path)
