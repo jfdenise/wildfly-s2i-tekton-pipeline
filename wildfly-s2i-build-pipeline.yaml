@@ -121,4 +121,5 @@ spec:
       - name: SCRIPT
         value: |
           oc new-app --image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName) || true
+          oc scale --replicas=1 deployment/$(params.deploymentName) 
           oc expose service/$(params.deploymentName) || true

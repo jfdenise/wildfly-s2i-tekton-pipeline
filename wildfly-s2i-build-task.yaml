@@ -143,6 +143,7 @@ spec:
         
         deployOnlyRuntimeImageName=$(params.deployOnlyRuntimeImageName)
         if [ -z "$deployOnlyRuntimeImageName" ]; then
+        echo "Building runtime image from $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION image, copying server and deployment to it."
         mv "$JBOSS_HOME" "$dockerBuildContext"
          cat <<EOF > "$dockerFile"
         FROM $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION
@@ -153,6 +154,7 @@ spec:
         EOF
         else
         deployOnlyRuntimeImage=$(params.dockerRegistry)/$(params.namespace)/$(params.deployOnlyRuntimeImageName)
+        echo "Building runtime image from $deployOnlyRuntimeImage:$WILDFLY_RUNTIME_IMAGE_VERSION image, copying deployment to it."
         cp -r "$JBOSS_HOME/standalone/deployments" "$dockerBuildContext/"
          cat <<EOF > "$dockerFile"
         FROM $deployOnlyRuntimeImage:$WILDFLY_RUNTIME_IMAGE_VERSION
@@ -161,6 +163,7 @@ spec:
         fi
         # If we are building a builder, generate the Docker file for it too.
         if [ "$buildBuilder" == "true" ]; then
+          echo "Building custom WildFly builder image from $WILDFLY_BUILDER_IMAGE:$WILDFLY_BUILDER_IMAGE_VERSION image, copying server to it."
           builderDockerFileName="BuilderDockerfile"
           builderDockerFile="$dockerBuildContext/$builderDockerFileName"
            cat <<EOF > "$builderDockerFile"
