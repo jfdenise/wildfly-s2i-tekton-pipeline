@@ -3,16 +3,18 @@
 We are defining 3 Tekton pipelines:
 
 * A pipeline that does a full S2I build. It provisions the WildFly server, deploys the application into it, generates an ImageStream
-and (optionally) creates a deployment and exposes the service.
+and (optionally) deploys the image using WildFly Helm charts.
 
 * A pipeline that provisions a WildFly server to produce a custom WildFly S2I builder and runtime imageStreams
 that can then be used to do an S2I build of an application.
 
 * A pipeline that build an application using a custom WildFly S2I builder and runtime images (produced by the previous pipeline). 
 In such case, no WildFly server provisioning occurs. Simple copy of the war file is operated and a runtime image is produced. 
-Optionally a deployment is created and the service is exposed.
+Optionally deploys the image using WildFly Helm charts.
 
-These 3 pipelines use the `wildfly-s2i-build-task` Tekton Task, `git-clone` Tekton ClusterTask and the `buildah` Tekton ClusterTask, 
+These 3 pipelines use the `wildfly-s2i-build-task` Tekton Task, `git-clone` Tekton ClusterTask and the `buildah` Tekton ClusterTask.
+
+The deployment operated from pipelines use the `helm-upgrade-from-repo` Tekton ClusterTask.
 
 ## Pre-requisites
 
@@ -72,15 +74,7 @@ Helm charts is then used to deploy the image.
 * Build: ``oc create --filename runs/app-from-jaxrs-ejb-builder-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-At the end of the pipeline run, the image `helloworld` is created.
-
-
-### Deploy with helm charts
-
-* ``oc set image-lookup helloworld``
-* ``helm install helloworld -f charts/helm-helloworld.yaml wildfly/wildfly``
-
-The deployment `helloworld` is created, scaled to 1 and the service is exposed.
+At the end of the pipeline run, the image `helloworld` is created, scaled to 1 and the service is exposed.
 
 
 ## Event listener example: Start the pipeline from an external event
@@ -105,3 +99,5 @@ Create a branch named `test-openshift-pipeline`.
 In your cloned repository push an empty commit to activate the webhook and start a pipeline run.
 
 `` git commit -m "empty-commit" --allow-empty && git push origin test-openshift-pipeline ``
+
+A new pipeline run is created, a new image is created, a new revision of the Helm Charts is created, the deployment is re-deployed.

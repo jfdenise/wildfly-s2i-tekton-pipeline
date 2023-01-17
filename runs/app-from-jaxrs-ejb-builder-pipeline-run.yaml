@@ -27,3 +27,5 @@ spec:
    # Comment this parameter. Doing so the wildfly-runtime image will get used and the WildFly server will get copied over the runtime image.
     - name: runtimeImageStream
       value: "jaxrs-ejb-server"
+    - name: deploy
+      value: "true"

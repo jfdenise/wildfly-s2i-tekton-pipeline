@@ -112,9 +112,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-data
-    - name: deploy
+    - name: helm-install
       taskRef:
-        name: openshift-client
+        name: helm-upgrade-from-repo
         kind: ClusterTask
       runAfter:
         - buildah-build-push-runtime-app
@@ -123,8 +123,12 @@ spec:
         operator: in
         values: ["true"]
       params:
-      - name: SCRIPT
-        value: |
-          oc new-app --image $(params.dockerRegistry)/$(params.namespace)/$(params.imageName) || true
-          oc scale --replicas=1 deployment/$(params.imageName) 
-          oc expose service/$(params.imageName) || true
+      - name: helm_repo
+        value: "https://docs.wildfly.org/wildfly-charts/"
+      - name: chart_name
+        value: "wildfly/wildfly"
+      - name: release_name
+        value: "$(params.imageName)"
+      - name: overwrite_values
+        value: "image.name=$(params.imageName),build.enabled=false"
+ 

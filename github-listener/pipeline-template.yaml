@@ -31,6 +31,8 @@ spec:
           value: "jaxrs-ejb-server-builder"
         - name: runtimeImageStream
           value: "jaxrs-ejb-server"
+        - name: deploy
+          value: "true"
       workspaces:
       - name: shared-data
         subPath: sources
