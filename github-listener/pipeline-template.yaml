@@ -19,7 +19,7 @@ spec:
       pipelineRef:
         name: wildfly-s2i-build-app-pipeline
       params:
-        - name: deploymentName
+        - name: imageName
           value: "helloworld"
         - name: gitUrl
           value: "$(tt.params.git-repo-url)"

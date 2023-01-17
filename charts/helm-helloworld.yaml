@@ -1,0 +1,6 @@
+image: 
+ name: helloworld
+build:
+  enabled: false
+deploy:
+  replicas: 1

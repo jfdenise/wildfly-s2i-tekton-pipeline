@@ -23,8 +23,8 @@ spec:
     - name: deploy
       default: "true"
       description: "Create a deployment from the generated image and expose the service."
-    - name: deploymentName
-      description: "The deployment name."
+    - name: imageName
+      description: "The image name, also used for deployment name."
     - name: MAVEN_ARGS_APPEND
       default: ""
       description: "Additional Maven arguments."
@@ -100,7 +100,7 @@ spec:
         kind: ClusterTask
       params:
         - name: IMAGE
-          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName)"
+          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.imageName)"
         - name: DOCKERFILE
           value: "$(tasks.wildfly-s2i-build-app.results.dockerFile)"
         - name: CONTEXT
@@ -125,6 +125,6 @@ spec:
       params:
       - name: SCRIPT
         value: |
-          oc new-app --image $(params.dockerRegistry)/$(params.namespace)/$(params.deploymentName) || true
-          oc scale --replicas=1 deployment/$(params.deploymentName) 
-          oc expose service/$(params.deploymentName) || true
+          oc new-app --image $(params.dockerRegistry)/$(params.namespace)/$(params.imageName) || true
+          oc scale --replicas=1 deployment/$(params.imageName) 
+          oc expose service/$(params.imageName) || true

@@ -19,7 +19,9 @@ spec:
       value: "https://github.com/wildfly/wildfly-s2i"
     - name: contextDir
       value: "examples/optimized-builder"
-    - name: deploymentName
+    - name: deploy
+      value: "false"
+    - name: imageName
       value: "helloworld"
     - name: builderImageStream
       value: "jaxrs-ejb-server-builder"

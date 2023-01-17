@@ -60,8 +60,8 @@ These ImageStreams will be used in the next example to produce an application im
 
 ## Application build with custom WildFly s2i builder and runtime Tekton pipeline example
 
-In this example we are re-using the `jaxrs-ejb-server-builder` and `jaxrs-ejb-server` ImageStreams to produce an application image 
-and scale / expose the deployment..
+In this example we are re-using the `jaxrs-ejb-server-builder` and `jaxrs-ejb-server` ImageStreams to produce an application image.
+Helm charts is then used to deploy the image.
 
 ### Create the pipeline
 
@@ -72,7 +72,15 @@ and scale / expose the deployment..
 * Build: ``oc create --filename runs/app-from-jaxrs-ejb-builder-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-At the end of the pipeline run, the deployment `helloworld` is scaled to 1 and the service is exposed.
+At the end of the pipeline run, the image `helloworld` is created.
+
+
+### Deploy with helm charts
+
+* ``oc set image-lookup helloworld``
+* ``helm install helloworld -f charts/helm-helloworld.yaml wildfly/wildfly``
+
+The deployment `helloworld` is created, scaled to 1 and the service is exposed.
 
 
 ## Event listener example: Start the pipeline from an external event

@@ -19,5 +19,5 @@ spec:
       value: "http://github.com/wildfly/wildfly-s2i"
     - name: contextDir
       value: "test/test-app"
-    - name: deploymentName
+    - name: imageName
       value: "test-app"
