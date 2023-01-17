@@ -14,8 +14,14 @@ spec:
     - name: wildflyFeaturePack
       default: "org.wildfly:wildfly-galleon-pack"
       description: "GroupId:ArtifactId of the WildFly feature-pack used to provision the WildFly server."
+    - name: wildflyCloudFeaturePack
+      default: "org.wildfly.cloud:wildfly-cloud-galleon-pack"
+      description: "GroupId:ArtifactId of the WildFly Cloud feature-pack used to provision the WildFly server."
     - name: wildflyVersion
       default: "27.0.1.Final"
+      description: "WildFly version used to provision the server"
+    - name: wildflyCloudVersion
+      default: "2.0.0.Final"
       description: "WildFly version used to provision the server"
     - name: namespace
       default: "$(context.pipelineRun.namespace)"
@@ -37,7 +43,7 @@ spec:
         - name: GALLEON_PROVISION_LAYERS
           value: "$(params.layers)"
         - name: GALLEON_PROVISION_FEATURE_PACKS
-          value: "$(params.wildflyFeaturePack):$(params.wildflyVersion),$(params.extraFeaturePacks)"
+          value: "$(params.wildflyFeaturePack):$(params.wildflyVersion),$(params.wildflyCloudFeaturePack):$(params.wildflyCloudVersion),$(params.extraFeaturePacks)"
         - name: builderImageVersion
           value: "$(params.imageVersion)"
         - name: runtimeImageVersion

@@ -4,3 +4,15 @@ build:
   enabled: false
 deploy:
   replicas: 1
+  annotations:
+    image.openshift.io/triggers: |-
+      [
+        {
+          "from":{
+            "kind":"ImageStreamTag",
+            "name":"helloworld:latest"
+          },
+          "fieldPath":"spec.template.spec.containers[0].image"
+        }
+      ]
+    

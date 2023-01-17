@@ -131,6 +131,12 @@ spec:
           export MAVEN_S2I_ARTIFACT_DIRS="$artifactDir"
         fi
         
+        if [ ! -z "$GALLEON_PROVISION_FEATURE_PACKS" ]; then
+          echo "Provisioning Galleon feature-packs: $GALLEON_PROVISION_FEATURE_PACKS"
+        fi
+        if [ ! -z "$GALLEON_PROVISION_LAYERS" ]; then
+          echo "Provisioning Galleon layers: $GALLEON_PROVISION_LAYERS"
+        fi
         /usr/local/s2i/assemble
         
         # Generate Dockerfile file and create docker build context
@@ -143,7 +149,7 @@ spec:
         
         deployOnlyRuntimeImageName=$(params.deployOnlyRuntimeImageName)
         if [ -z "$deployOnlyRuntimeImageName" ]; then
-        echo "Building runtime image from $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION image, copying server and deployment to it."
+        echo "Building runtime image from $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION image, copying server and deployment (if any) to it."
         mv "$JBOSS_HOME" "$dockerBuildContext"
          cat <<EOF > "$dockerFile"
         FROM $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION

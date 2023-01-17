@@ -21,3 +21,5 @@ spec:
       value: "test/test-app"
     - name: imageName
       value: "test-app"
+    - name: "deploy"
+      value: "true"

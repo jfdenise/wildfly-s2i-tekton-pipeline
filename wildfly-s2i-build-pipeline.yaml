@@ -23,7 +23,7 @@ spec:
       default: "image-registry.openshift-image-registry.svc:5000"
       description: "The docker Registry URL"
     - name: deploy
-      default: "true"
+      default: "false"
       description: "Create a deployment from the generated image and expose the service."
     - name: imageName
       description: "The image name, also used for deployment name."
