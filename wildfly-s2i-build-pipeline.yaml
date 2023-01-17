@@ -107,12 +107,26 @@ spec:
       workspaces:
         - name: source
           workspace: shared-data
+    - name: enable-image-lookup
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      runAfter:
+        - buildah-build-push
+      when:
+      - input: "$(params.deploy)"
+        operator: in
+        values: ["true"]
+      params:
+      - name: SCRIPT
+        value: |
+          oc set image-lookup $(params.imageName)
     - name: helm-install
       taskRef:
         name: helm-upgrade-from-repo
         kind: ClusterTask
       runAfter:
-        - buildah-build-push
+        - enable-image-lookup
       when:
       - input: "$(params.deploy)"
         operator: in

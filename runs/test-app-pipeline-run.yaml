@@ -20,6 +20,6 @@ spec:
     - name: contextDir
       value: "test/test-app"
     - name: imageName
-      value: "test-app"
+      value: "test-app-demo"
     - name: "deploy"
       value: "true"

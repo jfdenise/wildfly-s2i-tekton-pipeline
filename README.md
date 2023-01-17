@@ -14,7 +14,7 @@ Optionally deploys the image using WildFly Helm charts.
 
 These 3 pipelines use the `wildfly-s2i-build-task` Tekton Task, `git-clone` Tekton ClusterTask and the `buildah` Tekton ClusterTask.
 
-The deployment operated from pipelines use the `helm-upgrade-from-repo` Tekton ClusterTask.
+The deployment operated from the pipelines use the `openshift-client` and `helm-upgrade-from-repo` Tekton ClusterTask.
 
 ## Pre-requisites
 
@@ -41,7 +41,7 @@ This pipeline builds the WildFly server, the application, the application image 
 * Build: ``oc create --filename runs/test-app-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-At the end of the pipeline run, the deployment `test-app` is scaled to 1 and the service is exposed.
+At the end of the pipeline run, the deployment `test-app-demo` is scaled to 1 and the service is exposed.
 
 ## Custom WildFly s2i builder build Tekton pipeline example
 
