@@ -41,7 +41,7 @@
                 <configuration>
                     <feature-packs>
                         <feature-pack>
-                            <location>wildfly@maven(org.jboss.universe:community-universe)#27.0.0.Final</location>
+                            <location>wildfly@maven(org.jboss.universe:community-universe)#27.0.1.Final</location>
                             <inherit-packages>false</inherit-packages>
                         </feature-pack>
                         <feature-pack>
