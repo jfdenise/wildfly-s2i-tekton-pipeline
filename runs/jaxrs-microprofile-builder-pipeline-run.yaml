@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: jaxrs-ejb-builder
+  generateName: jaxrs-microprofile-builder
 spec:
   workspaces:
   - name: shared-data
@@ -16,6 +16,6 @@ spec:
     name: wildfly-s2i-builder-pipeline
   params:
     - name: builderName
-      value: "jaxrs-ejb-server"
+      value: "jaxrs-microprofile-server"
     - name: layers
-      value: "jaxrs-server,ejb"
+      value: "jaxrs-server, microprofile-config"

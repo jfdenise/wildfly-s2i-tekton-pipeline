@@ -16,10 +16,12 @@ spec:
     name: wildfly-s2i-build-pipeline
   params:
     - name: gitUrl
-      value: "http://github.com/wildfly/wildfly-s2i"
+      value: "http://github.com/jfdenise/wildfly-s2i-tekton-pipeline"
+    - name: revision
+      value: openshift
     - name: contextDir
-      value: "test/test-app"
+      value: "examples/microprofile"
     - name: imageName
-      value: "test-app-demo"
+      value: "microprofile-full"
     - name: "deploy"
       value: "true"

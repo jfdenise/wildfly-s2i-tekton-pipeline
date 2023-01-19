@@ -70,7 +70,7 @@ spec:
         - name: contextDir
           value: "$(params.contextDir)"
         - name: MAVEN_ARGS_APPEND
-          value: "$(params.MAVEN_ARGS_APPEND)"
+          value: "$(params.MAVEN_ARGS_APPEND) -Dwildfly.package.skip=true"
         - name: MAVEN_OPTS
           value: "$(params.MAVEN_OPTS)"
         - name: MAVEN_S2I_ARTIFACT_DIRS

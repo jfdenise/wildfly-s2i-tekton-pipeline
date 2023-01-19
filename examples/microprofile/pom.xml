@@ -3,12 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jboss.demo</groupId>
-    <artifactId>jaxrs</artifactId>
+    <artifactId>mp-demo</artifactId>
     <version>1.0.0</version>
     <packaging>war</packaging>
 
-    <name>EJB JSF Example</name>
-    <description>An example of how to use EJB JSF</description>
+    <name>Microprofile Example</name>
+    <description>An example of how to use Micro[profile config</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -18,6 +18,12 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
@@ -50,9 +56,8 @@
                         </feature-pack>
                     </feature-packs>
                     <layers>
-                        <layer>web-server</layer>
-                        <layer>ejb-lite</layer>
-                        <layer>jsf</layer>
+                        <layer>jaxrs-server</layer>
+                        <layer>microprofile-config</layer>
                     </layers>
                     <plugin-options>
                         <jboss-fork-embedded>${plugin.fork.embedded}</jboss-fork-embedded>

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: app-from-jaxrs-ejb-builder
+  generateName: app-from-jaxrs-microprofile-builder
 spec:
   workspaces:
   - name: shared-data
@@ -16,16 +16,18 @@ spec:
     name: wildfly-s2i-build-app-pipeline
   params:
     - name: gitUrl
-      value: "https://github.com/wildfly/wildfly-s2i"
+      value: "https://github.com/jfdenise/wildfly-s2i-tekton-pipeline"
+    - name: revision
+      value: openshift
     - name: contextDir
-      value: "examples/optimized-builder"
+      value: "examples/microprofile"
     - name: imageName
-      value: "helloworld"
+      value: "microprofile"
     - name: builderImageStream
-      value: "jaxrs-ejb-server-builder"
+      value: "jaxrs-microprofile-server-builder"
    # In case the S2I build of your application tunes the WildFly server (launch script extensions, copied content, ...)
    # Comment this parameter. Doing so the wildfly-runtime image will get used and the WildFly server will get copied over the runtime image.
     - name: runtimeImageStream
-      value: "jaxrs-ejb-server"
+      value: "jaxrs-microprofile-server"
     - name: deploy
       value: "true"

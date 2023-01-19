@@ -26,11 +26,11 @@ spec:
         - name: revision
           value: "$(tt.params.git-revision)"
         - name: contextDir
-          value: "examples/optimized-builder"
+          value: "examples/microprofile"
         - name: builderImageStream
-          value: "jaxrs-ejb-server-builder"
+          value: "jaxrs-microprofile-server-builder"
         - name: runtimeImageStream
-          value: "jaxrs-ejb-server"
+          value: "jaxrs-microprofile-server"
         - name: deploy
           value: "true"
       workspaces:

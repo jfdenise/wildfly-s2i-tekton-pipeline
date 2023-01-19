@@ -38,15 +38,15 @@ This pipeline builds the WildFly server, the application, the application image 
 
 ### Create a Pipeline run
 
-* Build: ``oc create --filename runs/test-app-pipeline-run.yaml``
+* Build: ``oc create --filename runs/full-build-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-At the end of the pipeline run, the deployment `test-app-demo` is scaled to 1 and the service is exposed.
+At the end of the pipeline run, the deployment `microprofile-full` is scaled to 1 and the service is exposed.
 
 ## Custom WildFly s2i builder build Tekton pipeline example
 
 In this example we are producing a custom WildFly S2I builder and runtime images allowing to build and run 
-applications that require the `jaxrs-server` and `ejb` Galleon layers.
+applications that require the `jaxrs-server` and `microprofile-config` Galleon layers.
 
 ### Create the pipeline
 
@@ -54,15 +54,15 @@ applications that require the `jaxrs-server` and `ejb` Galleon layers.
 
 ### Create a Pipeline run
 
-* Build: ``oc create --filename runs/jaxrs-ejb-builder-pipeline-run.yaml``
+* Build: ``oc create --filename runs/jxrs-microprofile-builder-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-At the end of the run, the ImageStream `jaxrs-ejb-server-builder:latest` and `jaxrs-ejb-server:latest` are created. 
+At the end of the run, the ImageStream `jaxrs-microprofile-server-builder:latest` and `jaxrs-microprofile-server:latest` are created. 
 These ImageStreams will be used in the next example to produce an application image.
 
 ## Application build with custom WildFly s2i builder and runtime Tekton pipeline example
 
-In this example we are re-using the `jaxrs-ejb-server-builder` and `jaxrs-ejb-server` ImageStreams to produce an application image.
+In this example we are re-using the `jaxrs-microprofile-server-builder` and `jaxrs-microprofile-server` ImageStreams to produce an application image.
 Helm charts is then used to deploy the image.
 
 ### Create the pipeline
@@ -71,10 +71,10 @@ Helm charts is then used to deploy the image.
 
 ### Create a Pipeline run
 
-* Build: ``oc create --filename runs/app-from-jaxrs-ejb-builder-pipeline-run.yaml``
+* Build: ``oc create --filename runs/app-from-jaxrs-microprofile-builder-pipeline-run.yaml``
 * In OpenShift console you can monitor the started pipeline run (from ``Pipelines/Pipelines/PipelineRuns`` ).
 
-At the end of the pipeline run, the image `helloworld` is created, scaled to 1 and the service is exposed.
+At the end of the pipeline run, the image `microprofile` is created, scaled to 1 and the service is exposed.
 
 
 ## Event listener example: Start the pipeline from an external event
