@@ -33,7 +33,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}</finalName>
+        <finalName>ROOT.war</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -62,7 +62,6 @@
                     <plugin-options>
                         <jboss-fork-embedded>${plugin.fork.embedded}</jboss-fork-embedded>
                     </plugin-options>
-                    <runtime-name>ROOT.war</runtime-name>
                 </configuration>
                 <executions>
                     <execution>
