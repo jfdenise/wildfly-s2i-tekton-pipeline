@@ -93,7 +93,7 @@ Create a branch named `test-openshift-pipeline`.
 
 * ``echo $(oc  get route el-test-app-event-listener --template='http://{{.spec.host}}')``
 * Copy the URL printed in the console.
-* Add a webhook in your git repository fork (Settings/Webhooks) using this URL.
+* Add a webhook in your git repository fork (Settings/Webhooks) using this URL of type `application/json`.
 
 ### Push a new commit
 
