@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: app-run
+spec:
+  workspaces:
+  - name: shared-data
+    subPath: sources
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  - name: maven-cache
+    subPath: maven-repo-cache
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace
+  pipelineRef:
+    name: wildfly-s2i-build-app-pipeline
+  params:
+    - name: gitUrl
+      value: "https://github.com/wildfly/quickstart"
+    - name: revision
+      value: main
+    - name: contextDir
+      value: "helloworld"
+    - name: imageName
+      value: "helloworld-from-pipeline"
+    - name: builderImageStream
+      value: "cloud-server-builder"
+    - name: runtimeImageStream
+      value: "cloud-server"
+    - name: deploy
+      value: "true"
