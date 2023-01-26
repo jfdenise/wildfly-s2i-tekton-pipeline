@@ -18,7 +18,7 @@ The output of this pipeline run is 2 imageStreams (the builder and runtime image
 * ``oc create --filename f2f/builder-run.yaml``
 * Then monitor the progress in the Openshift console (Pipelines)
 
-3) Create the application pipeline
+3) Create the application pipeline run
 
 The output of this pipeline is an application image deployed with Helm Charts
 
@@ -29,4 +29,27 @@ The output of this pipeline is an application image deployed with Helm Charts
 
 * curl https://$(oc get route helloworld-from-pipeline --template='{{ .spec.host }}')/HelloWorld
 
+## Event listener example: Start the pipeline from an external event
 
+NOTE: We are using a fork of `github.com/wildfly/quickstart` repository. If not already done, fork this repository and clone it.
+Create a branch named `test-openshift-pipeline`.
+
+### Create the Template and Event listener (a service named el-test-app-event-listener is created and exposed)
+
+* ``oc create --filename f2f/github-listener/pipeline-template.yaml``
+* ``oc create --filename f2f/github-listener/event-listener.yaml``
+* ``oc expose service/el-test-app-event-listener``
+
+### Create the webhook
+
+* ``echo $(oc  get route el-test-app-event-listener --template='http://{{.spec.host}}')``
+* Copy the URL printed in the console.
+* Add a webhook in your git repository fork (Settings/Webhooks) using this URL of type `application/json`.
+
+### Push a new commit
+
+In your cloned repository push an empty commit to activate the webhook and start a pipeline run.
+
+`` git commit -m "empty-commit" --allow-empty && git push origin test-openshift-pipeline ``
+
+A new pipeline run is created, a new image is created, a new revision of the Helm Charts is created, the deployment is re-deployed.
