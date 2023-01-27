@@ -20,7 +20,7 @@ spec:
         name: wildfly-s2i-build-app-pipeline
       params:
         - name: imageName
-          value: "helloworld"
+          value: "microprofile"
         - name: gitUrl
           value: "$(tt.params.git-repo-url)"
         - name: revision
