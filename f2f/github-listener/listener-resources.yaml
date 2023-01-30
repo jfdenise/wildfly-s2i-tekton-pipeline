@@ -1,0 +1,60 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: wildfly-trigger-template
+spec:
+  params:
+  - name: git-revision
+    description: The git revision
+  - name: git-repo-url
+    description: The git repository url
+  
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: build-from-listener-run-
+    spec:
+      serviceAccountName: pipeline
+      pipelineRef:
+        name: wildfly-s2i-build-app-pipeline
+      params:
+        - name: imageName
+          value: "helloworld-from-pipeline"
+        - name: gitUrl
+          value: "$(tt.params.git-repo-url)"
+        - name: revision
+          value: "$(tt.params.git-revision)"
+        - name: contextDir
+          value: "helloworld"
+        - name: builderImageStream
+          value: "cloud-server-builder"
+        - name: runtimeImageStream
+          value: "cloud-server"
+        - name: deploy
+          value: "true"
+      workspaces:
+      - name: shared-data
+        subPath: sources
+        persistentVolumeClaim:
+          claimName: wildfly-pipeline-workspace
+      - name: maven-cache
+        subPath: maven-repo-cache
+        persistentVolumeClaim:
+          claimName: wildfly-pipeline-workspace
+---
+
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: test-app-event-listener
+spec:
+  serviceAccountName: pipeline
+  triggers:
+  - bindings:
+    - ref: github-push
+      kind: ClusterTriggerBinding
+    template:
+      ref: wildfly-trigger-template
+      
+
