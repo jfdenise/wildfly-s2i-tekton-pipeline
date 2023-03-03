@@ -16,6 +16,10 @@ spec:
     subPath: buildah-cache
     persistentVolumeClaim:
       claimName: wildfly-pipeline-workspace2
+  - name: server-cache
+    subPath: server-cache
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace2
   pipelineRef:
     name: wildfly-s2i-build-pipeline
   params:
@@ -29,3 +33,5 @@ spec:
       value: "microprofile-full"
     - name: "deploy"
       value: "true"
+    - name: "cache"
+      value: "jaxrs-server-mp-27.0.1"

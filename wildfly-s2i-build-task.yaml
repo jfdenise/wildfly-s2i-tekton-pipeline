@@ -64,11 +64,17 @@ spec:
    - name: dockerRegistry
      default: "image-registry.openshift-image-registry.svc:5000"
      description: "The docker Registry URL"
+   - name: cache
+     type: string
+     default: ""
+     description: "A name to use to cache the server"
   workspaces:
     - name: sources
       description: The directory containing the sources.
     - name: maven-cache
       description: The maven repository cache
+    - name: server-cache
+      description: The server cache
   results:
     - name: dockerFile
       description: The runtime image generated docker file path.
@@ -137,8 +143,23 @@ spec:
         if [ ! -z "$GALLEON_PROVISION_LAYERS" ]; then
           echo "Provisioning Galleon layers: $GALLEON_PROVISION_LAYERS"
         fi
-        /usr/local/s2i/assemble
         
+        # Server cache handling
+        serverCache=$(params.cache)
+        if [ ! -z "$serverCache" ]; then
+          echo "Server caching is enabled"
+          cacheDir="$(workspaces.server-cache.path)/$serverCache"
+          if [ -d "$cacheDir" ]; then
+            echo "A server exists for $serverCache, disabling provisioning."
+            export MAVEN_ARGS_APPEND="${MAVEN_ARGS_APPEND} -Dwildfly.package.skip=true"
+            cp -r "$cacheDir" "$JBOSS_HOME"
+          else
+            echo "A server doesn't exist for $serverCache, provisioning is enabled."
+          fi
+        fi
+        
+        /usr/local/s2i/assemble
+      
         # Generate Dockerfile file and create docker build context
         # To be consumed by task that does docker build (kaniko, buildah,...)
         dockerDirName="wf-docker-build"
@@ -152,6 +173,12 @@ spec:
         echo "Building runtime image from $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION image, copying server and deployment (if any) to it."
         echo "Splitting server and deployment into 2 layers"
         mv "$JBOSS_HOME/standalone/deployments" "$dockerBuildContext"
+        if [ ! -z "$serverCache" ]; then
+          if [ -z "$cacheDir" ]; then
+            echo "Installing server $serverCache in cache"
+            cp -r "$JBOSS_HOME" "$cacheDir";            
+          fi
+        fi
         mv "$JBOSS_HOME" "$dockerBuildContext"
          cat <<EOF > "$dockerFile"
            FROM $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION

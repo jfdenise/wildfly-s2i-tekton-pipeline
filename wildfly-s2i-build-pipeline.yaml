@@ -42,10 +42,14 @@ spec:
     - name: GALLEON_PROVISION_FEATURE_PACKS
       default: ""
       description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon feature-packs to provision."
+    - name: cache
+      description: "A name to use to cache the server that will get reused. When cache is enabled, server is no more re-provisioned"
+      default: ""
   workspaces:
     - name: shared-data
     - name: maven-cache
     - name: buildah-cache
+    - name: server-cache
   tasks:
     - name: git-clone-repo
       taskRef:
@@ -83,6 +87,8 @@ spec:
           value: "$(params.GALLEON_PROVISION_LAYERS)"
         - name: GALLEON_PROVISION_FEATURE_PACKS
           value: "$(params.GALLEON_PROVISION_FEATURE_PACKS)"
+        - name: cache
+          value: "$(params.cache)"
       runAfter: 
         - git-clone-repo
       workspaces:
@@ -90,6 +96,8 @@ spec:
           workspace: shared-data
         - name: maven-cache
           workspace: maven-cache
+        - name: server-cache
+          workspace: server-cache
     - name: buildah-build-push
       taskRef:
         name: buildah-caching
