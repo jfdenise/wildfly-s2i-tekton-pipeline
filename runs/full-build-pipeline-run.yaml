@@ -7,18 +7,22 @@ spec:
   - name: shared-data
     subPath: sources
     persistentVolumeClaim:
-      claimName: wildfly-pipeline-workspace
+      claimName: wildfly-pipeline-workspace2
   - name: maven-cache
     subPath: maven-repo-cache
     persistentVolumeClaim:
-      claimName: wildfly-pipeline-workspace
+      claimName: wildfly-pipeline-workspace2
+  - name: buildah-cache
+    subPath: buildah-cache
+    persistentVolumeClaim:
+      claimName: wildfly-pipeline-workspace2
   pipelineRef:
     name: wildfly-s2i-build-pipeline
   params:
     - name: gitUrl
       value: "http://github.com/jfdenise/wildfly-s2i-tekton-pipeline"
     - name: revision
-      value: openshift
+      value: optimizd_deploy
     - name: contextDir
       value: "examples/microprofile"
     - name: imageName

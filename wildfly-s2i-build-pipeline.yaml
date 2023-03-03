@@ -45,6 +45,7 @@ spec:
   workspaces:
     - name: shared-data
     - name: maven-cache
+    - name: buildah-cache
   tasks:
     - name: git-clone-repo
       taskRef:
@@ -91,8 +92,8 @@ spec:
           workspace: maven-cache
     - name: buildah-build-push
       taskRef:
-        name: buildah
-        kind: ClusterTask
+        name: buildah-caching
+        kind: Task
       params:
         - name: IMAGE
           value: "$(params.dockerRegistry)/$(params.namespace)/$(params.imageName)"
@@ -101,12 +102,14 @@ spec:
         - name: CONTEXT
           value: "$(tasks.wildfly-s2i-build.results.dockerBuildContext)"
         - name: TLSVERIFY
-          value: "false" 
+          value: "false"
       runAfter: 
         - wildfly-s2i-build
       workspaces:
         - name: source
           workspace: shared-data
+        - name: cache
+          workspace: buildah-cache
     - name: enable-image-lookup
       taskRef:
         name: openshift-client

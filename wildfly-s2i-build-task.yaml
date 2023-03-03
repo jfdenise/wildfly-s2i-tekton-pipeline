@@ -107,7 +107,7 @@ spec:
         
         #Assembly expects source to be in src sub directory of S2I_DESTINATION_DIR
         srcDir="$(workspaces.sources.path)"
-
+        
         s2iDestinationDir="$srcDir/s2i_destination_dir"
         rm -rf "$s2iDestinationDir"
         export S2I_DESTINATION_DIR="$s2iDestinationDir"
@@ -150,13 +150,14 @@ spec:
         deployOnlyRuntimeImageName=$(params.deployOnlyRuntimeImageName)
         if [ -z "$deployOnlyRuntimeImageName" ]; then
         echo "Building runtime image from $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION image, copying server and deployment (if any) to it."
+        echo "Splitting server and deployment into 2 layers"
+        mv "$JBOSS_HOME/standalone/deployments" "$dockerBuildContext"
         mv "$JBOSS_HOME" "$dockerBuildContext"
          cat <<EOF > "$dockerFile"
-        FROM $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION
-        COPY server \$JBOSS_HOME
-        USER root
-        RUN chown -R jboss:root \$JBOSS_HOME && chmod -R ug+rwX \$JBOSS_HOME
-        USER jboss
+           FROM $WILDFLY_RUNTIME_IMAGE:$WILDFLY_RUNTIME_IMAGE_VERSION
+        COPY --chown=jboss:root server \$JBOSS_HOME
+        COPY --chown=jboss:root deployments $JBOSS_HOME/standalone/deployments
+        RUN chmod -R ug+rwX \$JBOSS_HOME
         EOF
         else
         deployOnlyRuntimeImage=$(params.dockerRegistry)/$(params.namespace)/$(params.deployOnlyRuntimeImageName)
