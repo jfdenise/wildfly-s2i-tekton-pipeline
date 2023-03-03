@@ -64,6 +64,11 @@ spec:
       name: build-and-push
       resources: {}
       script: >
+
+        echo "Clearing unused layers"
+
+        buildah rmi --prune -f
+
         buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
           $(params.BUILD_EXTRA_ARGS) --layers=true --root=$(workspaces.cache.path)/buildah-cache --format=$(params.FORMAT) \
           --tls-verify=$(params.TLSVERIFY) \
