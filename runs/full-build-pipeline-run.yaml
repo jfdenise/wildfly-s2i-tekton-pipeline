@@ -32,6 +32,8 @@ spec:
     - name: imageName
       value: "microprofile-full"
     - name: "deploy"
-      value: "true"
+      value: "false"
     - name: "cache"
       value: "jaxrs-server-mp-27.0.1"
+    - name: clearCache
+      value: "true"

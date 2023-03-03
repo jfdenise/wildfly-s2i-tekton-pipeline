@@ -45,6 +45,9 @@ spec:
     - name: cache
       description: "A name to use to cache the server that will get reused. When cache is enabled, server is no more re-provisioned"
       default: ""
+    - name: clearCache
+      description: "Set to true to clear the server in the cache. Meaningless if cache is not set."
+      default: "false"
   workspaces:
     - name: shared-data
     - name: maven-cache
@@ -89,6 +92,8 @@ spec:
           value: "$(params.GALLEON_PROVISION_FEATURE_PACKS)"
         - name: cache
           value: "$(params.cache)"
+        - name: clearCache
+          value: "$(params.clearCache)"
       runAfter: 
         - git-clone-repo
       workspaces:

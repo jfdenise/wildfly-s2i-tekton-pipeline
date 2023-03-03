@@ -68,6 +68,10 @@ spec:
      type: string
      default: ""
      description: "A name to use to cache the server"
+   - name: clearCache
+     type: string
+     default: "false"
+     description: "Set to true to clear the server in the cache. Meaningless if cache is not set."
   workspaces:
     - name: sources
       description: The directory containing the sources.
@@ -148,7 +152,13 @@ spec:
         serverCache=$(params.cache)
         if [ ! -z "$serverCache" ]; then
           echo "Server caching is enabled"
+          clearCache=$(params.clearCache)
           cacheDir="$(workspaces.server-cache.path)/$serverCache"
+          if [ "$clearCache" == "true" ]; then
+            echo "Clearing $serverCache from cache"
+            rm -rf "$cacheDir"
+          fi
+          
           if [ -d "$cacheDir" ]; then
             echo "A server exists for $serverCache, disabling provisioning."
             export MAVEN_ARGS_APPEND="${MAVEN_ARGS_APPEND} -Dwildfly.package.skip=true"
@@ -174,7 +184,7 @@ spec:
         echo "Splitting server and deployment into 2 layers"
         mv "$JBOSS_HOME/standalone/deployments" "$dockerBuildContext"
         if [ ! -z "$serverCache" ]; then
-          if [ -z "$cacheDir" ]; then
+          if [ ! -d "$cacheDir" ]; then
             echo "Installing server $serverCache in cache"
             cp -r "$JBOSS_HOME" "$cacheDir";            
           fi
