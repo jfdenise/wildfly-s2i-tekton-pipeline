@@ -1,37 +1,37 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  generateName: test-app
+  generateName: microprofile
 spec:
   workspaces:
   - name: shared-data
     subPath: sources
     persistentVolumeClaim:
-      claimName: wildfly-pipeline-workspace2
+      claimName: wildfly-pipeline-workspace
   - name: maven-cache
     subPath: maven-repo-cache
     persistentVolumeClaim:
-      claimName: wildfly-pipeline-workspace2
-  - name: buildah-cache
-    subPath: buildah-cache
-    persistentVolumeClaim:
-      claimName: wildfly-pipeline-workspace2
+      claimName: wildfly-pipeline-workspace
   - name: server-cache
     subPath: server-cache
     persistentVolumeClaim:
-      claimName: wildfly-pipeline-workspace2
+      claimName: wildfly-pipeline-workspace
   pipelineRef:
     name: wildfly-s2i-build-pipeline
   params:
     - name: gitUrl
       value: "http://github.com/jfdenise/wildfly-s2i-tekton-pipeline"
     - name: revision
-      value: optimizd_deploy
+      value: cache
     - name: contextDir
       value: "examples/microprofile"
     - name: imageName
-      value: "microprofile-full"
+      value: "microprofile"
     - name: "deploy"
       value: "false"
-    - name: "cache"
-      value: "jaxrs-server-mp-27.0.1"
+    - name: "cacheId"
+      value: "27.0.1"
+    - name: "cacheImageStream"
+      value: "jaxrs-server-microprofile-config"
+    - name: "clearCache"
+      value: "false"

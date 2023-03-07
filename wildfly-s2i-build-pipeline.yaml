@@ -36,14 +36,11 @@ spec:
     - name: MAVEN_S2I_ARTIFACT_DIRS
       default: ""
       description: "Relative paths of source directories to scan for build output. Defaults to **target**"
-    - name: GALLEON_PROVISION_LAYERS
+    - name: cacheId
+      description: "An id to use to cache the server that will get reused. When cache is enabled, server is no more re-provisioned. This ID is used as the tag of the Docker image containing the server"
       default: ""
-      description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon layers to provision."
-    - name: GALLEON_PROVISION_FEATURE_PACKS
-      default: ""
-      description: "Deprecated by the usage of the wildfly-maven-plugin. List of Galleon feature-packs to provision."
-    - name: cache
-      description: "A name to use to cache the server that will get reused. When cache is enabled, server is no more re-provisioned"
+    - name: cacheImageStream
+      description: "When cache is enabled, the name of the imageStream containing the server. Used as the from image of the application image."
       default: ""
     - name: clearCache
       description: "Set to true to clear the server in the cache. Meaningless if cache is not set."
@@ -51,7 +48,6 @@ spec:
   workspaces:
     - name: shared-data
     - name: maven-cache
-    - name: buildah-cache
     - name: server-cache
   tasks:
     - name: git-clone-repo
@@ -86,14 +82,18 @@ spec:
           value: "$(params.MAVEN_OPTS)"
         - name: MAVEN_S2I_ARTIFACT_DIRS
           value: "$(params.MAVEN_S2I_ARTIFACT_DIRS)"
-        - name: GALLEON_PROVISION_LAYERS
-          value: "$(params.GALLEON_PROVISION_LAYERS)"
-        - name: GALLEON_PROVISION_FEATURE_PACKS
-          value: "$(params.GALLEON_PROVISION_FEATURE_PACKS)"
-        - name: cache
-          value: "$(params.cache)"
+        - name: cacheId
+          value: "$(params.cacheId)"
+        - name: cacheImageStream
+          value: "$(params.cacheImageStream)"
         - name: clearCache
           value: "$(params.clearCache)"
+        - name: imageName
+          value: "$(params.imageName)"
+        - name: namespace
+          value: "$(params.namespace)"
+        - name: dockerRegistry
+          value: "$(params.dockerRegistry)"
       runAfter: 
         - git-clone-repo
       workspaces:
@@ -103,10 +103,32 @@ spec:
           workspace: maven-cache
         - name: server-cache
           workspace: server-cache
+    - name: buildah-build-push-server
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+        - name: IMAGE
+          value: "$(params.dockerRegistry)/$(params.namespace)/$(params.cacheImageStream):$(params.cacheId)"
+        - name: DOCKERFILE
+          value: "$(tasks.wildfly-s2i-build.results.serverDockerFile)"
+        - name: CONTEXT
+          value: "$(tasks.wildfly-s2i-build.results.dockerBuildContext)"
+        - name: TLSVERIFY
+          value: "false"
+      runAfter: 
+        - wildfly-s2i-build
+      when:
+      - input: "$(tasks.wildfly-s2i-build.results.generateServerImage)"
+        operator: in
+        values: ["true"]
+      workspaces:
+        - name: source
+          workspace: shared-data
     - name: buildah-build-push
       taskRef:
-        name: buildah-caching
-        kind: Task
+        name: buildah
+        kind: ClusterTask
       params:
         - name: IMAGE
           value: "$(params.dockerRegistry)/$(params.namespace)/$(params.imageName)"
@@ -117,12 +139,10 @@ spec:
         - name: TLSVERIFY
           value: "false"
       runAfter: 
-        - wildfly-s2i-build
+        - buildah-build-push-server
       workspaces:
         - name: source
           workspace: shared-data
-        - name: cache
-          workspace: buildah-cache
     - name: enable-image-lookup
       taskRef:
         name: openshift-client
