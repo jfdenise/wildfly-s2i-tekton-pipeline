@@ -114,8 +114,9 @@ spec:
           srcDir="$srcDir/$contextDir"
         fi
         s2iSourceDir="$s2iDestinationDir/src"
+        
         mkdir -p "$s2iSourceDir"
-        mv "$srcDir"/* "$s2iSourceDir"
+        mv "$srcDir"/* "$s2iSourceDir" > /dev/null 2>&1 || true
         artifactDir="$(params.MAVEN_S2I_ARTIFACT_DIRS)"
         if [ ! -z "$artifactDir" ]; then
           export MAVEN_S2I_ARTIFACT_DIRS="$artifactDir"
